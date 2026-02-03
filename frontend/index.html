@@ -66,6 +66,7 @@
     </style>
 
     <!-- Facebook Pixel Code -->
+    <!-- TODO: Replace YOUR_PIXEL_ID with your actual Facebook Pixel ID -->
     <script>
         !function(f,b,e,v,n,t,s)
         {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -75,12 +76,12 @@
         t.src=v;s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '733939589457690');
+        fbq('init', 'YOUR_PIXEL_ID');
         fbq('track', 'PageView');
     </script>
     <noscript>
         <img height="1" width="1" style="display:none"
-        src="https://www.facebook.com/tr?id=733939589457690&ev=PageView&noscript=1"/>
+        src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"/>
     </noscript>
     <!-- End Facebook Pixel Code -->
 </head>
@@ -104,8 +105,18 @@
     <div class="log" id="log">[Ready] Waiting for events...</div>
 
     <script>
-        // CAPI Backend URL - Your Render deployment URL
-        const CAPI_URL = 'https://capi-backend-fdsl.onrender.com/api/event';
+        // ============================================================
+        // CONFIGURATION - Update these values before deploying
+        // ============================================================
+        
+        // Your CAPI Backend URL (e.g., https://your-app.onrender.com/api/event)
+        // For local testing, use: http://localhost:3000/api/event
+        const CAPI_URL = 'http://localhost:3000/api/event';
+        
+        // Your Facebook Pixel ID (same as in the Pixel code above)
+        const PIXEL_ID = 'YOUR_PIXEL_ID';
+
+        // ============================================================
 
         // Logging function to display events in the log panel
         function log(message, type) {
@@ -250,7 +261,7 @@
         });
 
         // Log page load
-        log('Page loaded. Pixel ID: 733939589457690', 'info');
+        log('Page loaded. Pixel ID: ' + PIXEL_ID, 'info');
         log('CAPI Backend: ' + CAPI_URL, 'info');
         log('PageView event sent via Pixel', 'pixel');
     </script>

@@ -5,19 +5,31 @@ const crypto = require('crypto');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Configuration
-const PIXEL_ID = '733939589457690';
+// ============================================================
+// CONFIGURATION - Update these values before deploying
+// ============================================================
+
+// Your Facebook Pixel ID (get from Meta Events Manager)
+const PIXEL_ID = process.env.PIXEL_ID || 'YOUR_PIXEL_ID';
+
+// Your Facebook Access Token (set as environment variable - NEVER commit this!)
 const ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN;
+
+// Facebook Graph API version
 const API_VERSION = 'v21.0';
 
-// CORS Configuration - Allow requests from GitHub Pages and local development
+// CORS Configuration - Add your frontend domains here
+const ALLOWED_ORIGINS = [
+    // Add your GitHub Pages URL here, e.g.: 'https://yourusername.github.io'
+    'http://localhost:3000',
+    'http://localhost:8080',
+    'http://127.0.0.1:5500'  // VS Code Live Server
+];
+
+// ============================================================
+
 app.use(cors({
-    origin: [
-        'https://abhinav14kr.github.io',
-        'http://localhost:3000',
-        'http://localhost:8080',
-        'http://127.0.0.1:5500'  // VS Code Live Server
-    ],
+    origin: ALLOWED_ORIGINS,
     methods: ['POST', 'GET', 'OPTIONS'],
     allowedHeaders: ['Content-Type'],
     credentials: true
@@ -48,9 +60,10 @@ function hashPhone(phone) {
 // Health check endpoint
 app.get('/', function(req, res) {
     const tokenConfigured = !!ACCESS_TOKEN;
+    const pixelConfigured = PIXEL_ID !== 'YOUR_PIXEL_ID';
     res.json({
         status: 'CAPI Backend is running',
-        pixel_id: PIXEL_ID,
+        pixel_id_configured: pixelConfigured,
         api_version: API_VERSION,
         access_token_configured: tokenConfigured,
         message: 'POST to /api/event to send events',
@@ -65,10 +78,11 @@ app.get('/', function(req, res) {
 // Test endpoint to verify configuration
 app.get('/api/test', function(req, res) {
     const tokenConfigured = !!ACCESS_TOKEN;
+    const pixelConfigured = PIXEL_ID !== 'YOUR_PIXEL_ID';
     const tokenPreview = ACCESS_TOKEN ? ACCESS_TOKEN.substring(0, 10) + '...' : 'NOT SET';
 
     console.log('\n=== Configuration Test ===');
-    console.log('Pixel ID:', PIXEL_ID);
+    console.log('Pixel ID Configured:', pixelConfigured);
     console.log('API Version:', API_VERSION);
     console.log('Access Token Configured:', tokenConfigured);
     console.log('Access Token Preview:', tokenPreview);
@@ -76,16 +90,12 @@ app.get('/api/test', function(req, res) {
 
     res.json({
         status: 'Configuration Check',
-        pixel_id: PIXEL_ID,
+        pixel_id_configured: pixelConfigured,
         api_version: API_VERSION,
         access_token_configured: tokenConfigured,
         access_token_preview: tokenPreview,
-        graph_api_url: `https://graph.facebook.com/${API_VERSION}/${PIXEL_ID}/events`,
-        cors_origins: [
-            'https://abhinav14kr.github.io',
-            'http://localhost:3000',
-            'http://localhost:8080'
-        ]
+        graph_api_url: `https://graph.facebook.com/${API_VERSION}/<PIXEL_ID>/events`,
+        allowed_origins: ALLOWED_ORIGINS
     });
 });
 
@@ -109,7 +119,17 @@ app.post('/api/event', async function(req, res) {
         return res.status(500).json({
             success: false,
             error: 'Access token not configured on server',
-            hint: 'Set FB_ACCESS_TOKEN environment variable on Render'
+            hint: 'Set FB_ACCESS_TOKEN environment variable'
+        });
+    }
+
+    // Check for Pixel ID
+    if (PIXEL_ID === 'YOUR_PIXEL_ID') {
+        console.error('❌ ERROR: PIXEL_ID not configured!');
+        return res.status(500).json({
+            success: false,
+            error: 'Pixel ID not configured on server',
+            hint: 'Set PIXEL_ID environment variable'
         });
     }
 
@@ -160,7 +180,7 @@ app.post('/api/event', async function(req, res) {
     // Hash email
     if (userData.email) {
         userDataPayload.em = [hashData(userData.email)];
-        console.log('   Email:', userData.email, '→ hashed');
+        console.log('   Email: [provided] → hashed');
     }
 
     // Hash phone
@@ -168,32 +188,32 @@ app.post('/api/event', async function(req, res) {
         const hashedPhone = hashPhone(userData.phone);
         if (hashedPhone) {
             userDataPayload.ph = [hashedPhone];
-            console.log('   Phone:', userData.phone, '→ hashed');
+            console.log('   Phone: [provided] → hashed');
         }
     }
 
     // Hash first name
     if (userData.firstName) {
         userDataPayload.fn = [hashData(userData.firstName)];
-        console.log('   First Name:', userData.firstName, '→ hashed');
+        console.log('   First Name: [provided] → hashed');
     }
 
     // Hash last name
     if (userData.lastName) {
         userDataPayload.ln = [hashData(userData.lastName)];
-        console.log('   Last Name:', userData.lastName, '→ hashed');
+        console.log('   Last Name: [provided] → hashed');
     }
 
     // Facebook click ID (not hashed - passed as-is)
     if (userData.fbc) {
         userDataPayload.fbc = userData.fbc;
-        console.log('   FBC:', userData.fbc);
+        console.log('   FBC: [provided]');
     }
 
     // Facebook browser ID (not hashed - passed as-is)
     if (userData.fbp) {
         userDataPayload.fbp = userData.fbp;
-        console.log('   FBP:', userData.fbp);
+        console.log('   FBP: [provided]');
     }
 
     console.log('   Client IP:', clientIp);
@@ -277,15 +297,19 @@ app.listen(PORT, function() {
     console.log('╚════════════════════════════════════════╝');
     console.log('');
     console.log('🚀 Server running on port:', PORT);
-    console.log('📊 Pixel ID:', PIXEL_ID);
+    console.log('📊 Pixel ID:', PIXEL_ID !== 'YOUR_PIXEL_ID' ? 'Configured' : '⚠️  NOT SET');
     console.log('📡 API Version:', API_VERSION);
 
     if (ACCESS_TOKEN) {
-        console.log('🔑 Access Token: Configured (' + ACCESS_TOKEN.substring(0, 10) + '...)');
+        console.log('🔑 Access Token: Configured');
     } else {
         console.warn('\n⚠️  WARNING: FB_ACCESS_TOKEN not set!');
         console.warn('   Events will fail until you set this environment variable.');
-        console.warn('   On Render: Dashboard → Environment → Add FB_ACCESS_TOKEN');
+    }
+
+    if (PIXEL_ID === 'YOUR_PIXEL_ID') {
+        console.warn('\n⚠️  WARNING: PIXEL_ID not set!');
+        console.warn('   Set the PIXEL_ID environment variable to your Facebook Pixel ID.');
     }
 
     console.log('\n📌 Endpoints:');

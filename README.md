@@ -59,8 +59,8 @@ The server will run at `http://localhost:3000`
 
 Edit `frontend/index.html`:
 
-1. **Line 78**: Replace `733939589457690` with your Pixel ID
-2. **Line 108**: Update `CAPI_URL` to your backend URL:
+1. Replace all instances of `YOUR_PIXEL_ID` with your actual Facebook Pixel ID (appears in 3 places)
+2. Update `CAPI_URL` to your backend URL:
    - Local: `http://localhost:3000/api/event`
    - Production: `https://your-backend.onrender.com/api/event`
 
@@ -121,14 +121,16 @@ const CAPI_URL = 'https://your-app.onrender.com/api/event';
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `FB_ACCESS_TOKEN` | Yes | Facebook System User Access Token |
+| `PIXEL_ID` | Yes | Your Facebook Pixel ID |
 | `PORT` | No | Server port (default: 3000) |
 
 ### Frontend Configuration (index.html)
 
-| Line | Variable | Description |
-|------|----------|-------------|
-| 78 | Pixel ID | Your Facebook Pixel ID |
-| 108 | `CAPI_URL` | Your backend API endpoint |
+| Variable | Description |
+|----------|-------------|
+| `YOUR_PIXEL_ID` | Replace with your Facebook Pixel ID (3 places) |
+| `CAPI_URL` | Your backend API endpoint |
+| `PIXEL_ID` | JavaScript variable for logging |
 
 ## 📊 How Event Deduplication Works
 
