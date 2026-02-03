@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meta Pixels + CAPI Test Lab</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+            background: #f0f2f5;
+        }
+        h1 { color: #1877f2; text-align: center; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: #65676b; margin-bottom: 30px; }
+        
+        .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+        
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .card h2 { margin-top: 0; color: #1c1e21; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        
+        .test-controls { grid-column: 1 / -1; }
+        
+        .toggle-group { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; }
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            background: #f0f2f5;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 200px;
+        }
+        .toggle-item.disabled { background: #ffebee; }
+        .toggle-item.enabled { background: #e8f5e9; }
+        
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc;
+            transition: .3s;
+            border-radius: 26px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #42b72a; }
+        input:checked + .slider:before { transform: translateX(24px); }
+        
+        .toggle-label { font-weight: 500; }
+        .toggle-status { font-size: 12px; color: #65676b; }
+        
+        input[type="text"], input[type="email"], input[type="tel"], input[type="url"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0 15px 0;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        input:focus { border-color: #1877f2; outline: none; }
+        label { font-weight: 500; color: #333; font-size: 14px; }
+        
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            flex: 1;
+            min-width: 120px;
+        }
+        .btn-primary { background: #1877f2; color: white; }
+        .btn-primary:hover { background: #166fe5; }
+        .btn-success { background: #42b72a; color: white; }
+        .btn-success:hover { background: #36a420; }
+        .btn-warning { background: #f0ad4e; color: white; }
+        .btn-warning:hover { background: #ec971f; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-danger:hover { background: #c82333; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
+        
+        .scenario-btns { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
+        .scenario-btns h3 { margin: 0 0 10px 0; font-size: 14px; color: #65676b; }
+        
+        .log {
+            background: #1e1e1e;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 11px;
+            height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+        .log .info { color: #61dafb; }
+        .log .pixel { color: #f1c40f; }
+        .log .capi { color: #e74c3c; }
+        .log .success { color: #2ecc71; }
+        .log .error { color: #e74c3c; }
+        .log .debug { color: #9b59b6; }
+        .log .warn { color: #f39c12; }
+        .log .scenario { color: #3498db; font-weight: bold; }
+        
+        .status-bar {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            background: #f0f2f5;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .status-dot.green { background: #42b72a; }
+        .status-dot.red { background: #dc3545; }
+        .status-dot.yellow { background: #f0ad4e; }
+        
+        .results-summary {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+        @media (max-width: 768px) { .results-summary { grid-template-columns: 1fr; } }
+        
+        .result-card {
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .result-card.pixel-only { background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); }
+        .result-card.capi-only { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); }
+        .result-card.both { background: linear-gradient(135deg, #cce5ff 0%, #b8daff 100%); }
+        .result-card h3 { margin: 0 0 5px 0; font-size: 14px; }
+        .result-card .count { font-size: 32px; font-weight: bold; }
+        .result-card .label { font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Meta Pixels + CAPI Test Lab</h1>
+    <p class="subtitle">Test different scenarios to understand how Pixel and CAPI work together</p>
+
+    <div class="container">
+        <!-- Test Controls -->
+        <div class="card test-controls">
+            <h2>🎛️ Test Controls</h2>
+            
+            <div class="toggle-group">
+                <div class="toggle-item enabled" id="pixelToggleItem">
+                    <label class="switch">
+                        <input type="checkbox" id="pixelEnabled" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <div>
+                        <div class="toggle-label">Browser Pixel</div>
+                        <div class="toggle-status" id="pixelStatus">Enabled - Events sent via fbq()</div>
+                    </div>
+                </div>
+                
+                <div class="toggle-item enabled" id="capiToggleItem">
+                    <label class="switch">
+                        <input type="checkbox" id="capiEnabled" checked>
+                        <span class="slider"></span>
+                    </label>
+                    <div>
+                        <div class="toggle-label">Server CAPI</div>
+                        <div class="toggle-status" id="capiStatus">Enabled - Events sent to backend</div>
+                    </div>
+                </div>
+                
+                <div class="toggle-item enabled" id="adBlockToggleItem">
+                    <label class="switch">
+                        <input type="checkbox" id="simulateAdBlock">
+                        <span class="slider"></span>
+                    </label>
+                    <div>
+                        <div class="toggle-label">Simulate Ad Blocker</div>
+                        <div class="toggle-status" id="adBlockStatus">Off - Pixel works normally</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="scenario-btns">
+                <h3>Quick Test Scenarios:</h3>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="setScenario('both')">✅ Both Working</button>
+                    <button class="btn-warning" onclick="setScenario('pixelOnly')">🌐 Pixel Only</button>
+                    <button class="btn-success" onclick="setScenario('capiOnly')">🖥️ CAPI Only</button>
+                    <button class="btn-danger" onclick="setScenario('adBlocked')">🚫 Ad Blocked</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configuration -->
+        <div class="card">
+            <h2>⚙️ Configuration</h2>
+            
+            <label for="pixelId">Pixel ID</label>
+            <input type="text" id="pixelId" placeholder="Enter your Pixel ID" value="">
+            
+            <label for="capiUrl">CAPI Backend URL</label>
+            <input type="url" id="capiUrl" placeholder="https://your-backend.onrender.com/api/event" value="http://localhost:3000/api/event">
+            
+            <button class="btn-secondary" onclick="updateConfig()" style="width: 100%;">Update Configuration</button>
+        </div>
+
+        <!-- User Data -->
+        <div class="card">
+            <h2>👤 User Data</h2>
+            
+            <label for="name">Full Name</label>
+            <input type="text" id="name" placeholder="John Doe" value="Test User">
+            
+            <label for="email">Email</label>
+            <input type="email" id="email" placeholder="test@example.com" value="test@example.com">
+            
+            <label for="phone">Phone (optional)</label>
+            <input type="tel" id="phone" placeholder="+1234567890" value="">
+        </div>
+
+        <!-- Results Summary -->
+        <div class="results-summary">
+            <div class="result-card pixel-only">
+                <h3>🌐 Pixel Only</h3>
+                <div class="count" id="pixelOnlyCount">0</div>
+                <div class="label">Events sent only via Browser</div>
+            </div>
+            <div class="result-card capi-only">
+                <h3>🖥️ CAPI Only</h3>
+                <div class="count" id="capiOnlyCount">0</div>
+                <div class="label">Events sent only via Server</div>
+            </div>
+            <div class="result-card both">
+                <h3>✅ Both (Deduplicated)</h3>
+                <div class="count" id="bothCount">0</div>
+                <div class="label">Events sent via both channels</div>
+            </div>
+        </div>
+
+        <!-- Event Buttons -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>🎯 Send Test Events</h2>
+            <div class="status-bar">
+                <div class="status-item">
+                    <span class="status-dot" id="pixelDot"></span>
+                    <span>Pixel: <span id="pixelStatusText">Checking...</span></span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" id="capiDot"></span>
+                    <span>CAPI: <span id="capiStatusText">Checking...</span></span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot" id="adBlockDot"></span>
+                    <span>Ad Block Sim: <span id="adBlockStatusText">Off</span></span>
+                </div>
+            </div>
+            <div class="btn-group">
+                <button class="btn-primary" onclick="sendEvent('AddToCart')">🛒 Add to Cart</button>
+                <button class="btn-success" onclick="sendEvent('AddToWishlist')">❤️ Add to Wishlist</button>
+                <button class="btn-warning" onclick="sendEvent('ViewContent')">👁️ View Content</button>
+                <button class="btn-danger" onclick="sendEvent('Purchase')">💳 Purchase</button>
+                <button class="btn-secondary" onclick="clearLog()">🗑️ Clear Log</button>
+            </div>
+        </div>
+
+        <!-- Event Log -->
+        <div class="card" style="grid-column: 1 / -1;">
+            <h2>📋 Event Log</h2>
+            <div class="log" id="log">[Ready] Test Lab initialized. Configure your Pixel ID and CAPI URL above.</div>
+        </div>
+    </div>
+
+    <!-- Facebook Pixel Code (loaded dynamically) -->
+    <script>
+        // ============================================================
+        // STATE
+        // ============================================================
+        let config = {
+            pixelId: '',
+            capiUrl: 'http://localhost:3000/api/event',
+            pixelEnabled: true,
+            capiEnabled: true,
+            simulateAdBlock: false
+        };
+        
+        let stats = {
+            pixelOnly: 0,
+            capiOnly: 0,
+            both: 0
+        };
+        
+        let pixelLoaded = false;
+
+        // ============================================================
+        // LOGGING
+        // ============================================================
+        function log(message, type) {
+            const el = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type || 'info';
+            el.innerHTML += '\n<span class="' + className + '">[' + timestamp + '] ' + message + '</span>';
+            el.scrollTop = el.scrollHeight;
+            console.log('[' + type + ']', message);
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '[Cleared] Ready for new events...';
+            stats = { pixelOnly: 0, capiOnly: 0, both: 0 };
+            updateStats();
+        }
+
+        // ============================================================
+        // PIXEL LOADING
+        // ============================================================
+        function loadPixel(pixelId) {
+            if (!pixelId || pixelId === 'YOUR_PIXEL_ID') {
+                log('⚠️ Pixel ID not configured. Enter your Pixel ID above.', 'warn');
+                return false;
+            }
+            
+            if (pixelLoaded) {
+                log('Pixel already loaded. Reinitializing with new ID...', 'debug');
+            }
+            
+            // Load Facebook Pixel
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+            
+            fbq('init', pixelId);
+            pixelLoaded = true;
+            log('✓ Pixel loaded with ID: ' + pixelId, 'success');
+            return true;
+        }
+
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
+        function updateConfig() {
+            config.pixelId = document.getElementById('pixelId').value.trim();
+            config.capiUrl = document.getElementById('capiUrl').value.trim();
+            
+            log('════════════════════════════════════════', 'info');
+            log('Configuration Updated:', 'info');
+            log('  Pixel ID: ' + (config.pixelId || 'NOT SET'), 'debug');
+            log('  CAPI URL: ' + config.capiUrl, 'debug');
+            
+            if (config.pixelId) {
+                loadPixel(config.pixelId);
+            }
+            
+            updateStatusDisplay();
+            log('════════════════════════════════════════', 'info');
+        }
+
+        // ============================================================
+        // TOGGLE HANDLERS
+        // ============================================================
+        document.getElementById('pixelEnabled').addEventListener('change', function() {
+            config.pixelEnabled = this.checked;
+            updateToggleDisplay('pixel', this.checked);
+            log('Browser Pixel: ' + (this.checked ? 'ENABLED' : 'DISABLED'), this.checked ? 'success' : 'warn');
+        });
+
+        document.getElementById('capiEnabled').addEventListener('change', function() {
+            config.capiEnabled = this.checked;
+            updateToggleDisplay('capi', this.checked);
+            log('Server CAPI: ' + (this.checked ? 'ENABLED' : 'DISABLED'), this.checked ? 'success' : 'warn');
+        });
+
+        document.getElementById('simulateAdBlock').addEventListener('change', function() {
+            config.simulateAdBlock = this.checked;
+            updateToggleDisplay('adBlock', this.checked);
+            log('Ad Blocker Simulation: ' + (this.checked ? 'ON - Pixel will fail' : 'OFF'), this.checked ? 'warn' : 'info');
+        });
+
+        function updateToggleDisplay(type, enabled) {
+            const item = document.getElementById(type + 'ToggleItem');
+            const status = document.getElementById(type + 'Status');
+            
+            if (type === 'adBlock') {
+                item.className = 'toggle-item ' + (enabled ? 'disabled' : 'enabled');
+                status.textContent = enabled ? 'On - Simulating blocked Pixel' : 'Off - Pixel works normally';
+            } else {
+                item.className = 'toggle-item ' + (enabled ? 'enabled' : 'disabled');
+                if (type === 'pixel') {
+                    status.textContent = enabled ? 'Enabled - Events sent via fbq()' : 'Disabled - No browser events';
+                } else {
+                    status.textContent = enabled ? 'Enabled - Events sent to backend' : 'Disabled - No server events';
+                }
+            }
+            updateStatusDisplay();
+        }
+
+        function updateStatusDisplay() {
+            const pixelDot = document.getElementById('pixelDot');
+            const capiDot = document.getElementById('capiDot');
+            const adBlockDot = document.getElementById('adBlockDot');
+            
+            pixelDot.className = 'status-dot ' + (config.pixelEnabled && !config.simulateAdBlock ? 'green' : 'red');
+            document.getElementById('pixelStatusText').textContent = 
+                !config.pixelEnabled ? 'Disabled' : 
+                config.simulateAdBlock ? 'Blocked' : 
+                config.pixelId ? 'Ready' : 'No ID';
+            
+            capiDot.className = 'status-dot ' + (config.capiEnabled ? 'green' : 'red');
+            document.getElementById('capiStatusText').textContent = config.capiEnabled ? 'Ready' : 'Disabled';
+            
+            adBlockDot.className = 'status-dot ' + (config.simulateAdBlock ? 'yellow' : 'green');
+            document.getElementById('adBlockStatusText').textContent = config.simulateAdBlock ? 'On' : 'Off';
+        }
+
+        // ============================================================
+        // SCENARIO PRESETS
+        // ============================================================
+        function setScenario(scenario) {
+            log('════════════════════════════════════════', 'scenario');
+            
+            switch(scenario) {
+                case 'both':
+                    log('📋 SCENARIO: Both Pixel and CAPI Working', 'scenario');
+                    log('This is the ideal setup for deduplication.', 'info');
+                    document.getElementById('pixelEnabled').checked = true;
+                    document.getElementById('capiEnabled').checked = true;
+                    document.getElementById('simulateAdBlock').checked = false;
+                    config.pixelEnabled = true;
+                    config.capiEnabled = true;
+                    config.simulateAdBlock = false;
+                    break;
+                    
+                case 'pixelOnly':
+                    log('📋 SCENARIO: Pixel Only (No CAPI)', 'scenario');
+                    log('Simulates a setup without server-side tracking.', 'info');
+                    log('⚠️ Events may be missed if user has ad blocker!', 'warn');
+                    document.getElementById('pixelEnabled').checked = true;
+                    document.getElementById('capiEnabled').checked = false;
+                    document.getElementById('simulateAdBlock').checked = false;
+                    config.pixelEnabled = true;
+                    config.capiEnabled = false;
+                    config.simulateAdBlock = false;
+                    break;
+                    
+                case 'capiOnly':
+                    log('📋 SCENARIO: CAPI Only (No Browser Pixel)', 'scenario');
+                    log('Simulates server-side only tracking.', 'info');
+                    log('✓ Works even with ad blockers!', 'success');
+                    document.getElementById('pixelEnabled').checked = false;
+                    document.getElementById('capiEnabled').checked = true;
+                    document.getElementById('simulateAdBlock').checked = false;
+                    config.pixelEnabled = false;
+                    config.capiEnabled = true;
+                    config.simulateAdBlock = false;
+                    break;
+                    
+                case 'adBlocked':
+                    log('📋 SCENARIO: Ad Blocker Active', 'scenario');
+                    log('Simulates a user with an ad blocker installed.', 'info');
+                    log('Pixel will fail, but CAPI will still work!', 'warn');
+                    document.getElementById('pixelEnabled').checked = true;
+                    document.getElementById('capiEnabled').checked = true;
+                    document.getElementById('simulateAdBlock').checked = true;
+                    config.pixelEnabled = true;
+                    config.capiEnabled = true;
+                    config.simulateAdBlock = true;
+                    break;
+            }
+            
+            updateToggleDisplay('pixel', config.pixelEnabled);
+            updateToggleDisplay('capi', config.capiEnabled);
+            updateToggleDisplay('adBlock', config.simulateAdBlock);
+            log('════════════════════════════════════════', 'scenario');
+        }
+
+        // ============================================================
+        // STATS
+        // ============================================================
+        function updateStats() {
+            document.getElementById('pixelOnlyCount').textContent = stats.pixelOnly;
+            document.getElementById('capiOnlyCount').textContent = stats.capiOnly;
+            document.getElementById('bothCount').textContent = stats.both;
+        }
+
+        // ============================================================
+        // COOKIE HELPER
+        // ============================================================
+        function getCookie(name) {
+            const value = '; ' + document.cookie;
+            const parts = value.split('; ' + name + '=');
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        // ============================================================
+        // MAIN EVENT FUNCTION
+        // ============================================================
+        async function sendEvent(eventName) {
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            
+            if (!name || !email) {
+                alert('Please enter name and email');
+                return;
+            }
+            
+            const names = name.trim().split(' ');
+            const firstName = names[0] || '';
+            const lastName = names.slice(1).join(' ') || '';
+            
+            // Generate unique Event ID for deduplication
+            const eventId = eventName + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            const eventData = {
+                content_name: 'Test Product',
+                content_ids: ['PROD-1234'],
+                content_type: 'product',
+                value: 49.99,
+                currency: 'USD'
+            };
+            
+            const fbc = getCookie('_fbc');
+            const fbp = getCookie('_fbp');
+            
+            log('════════════════════════════════════════', 'info');
+            log('🎯 EVENT: ' + eventName, 'info');
+            log('Event ID: ' + eventId, 'debug');
+            log('Configuration:', 'debug');
+            log('  Pixel Enabled: ' + config.pixelEnabled, 'debug');
+            log('  CAPI Enabled: ' + config.capiEnabled, 'debug');
+            log('  Ad Block Sim: ' + config.simulateAdBlock, 'debug');
+            
+            let pixelSuccess = false;
+            let capiSuccess = false;
+            
+            // ===== PIXEL EVENT =====
+            if (config.pixelEnabled) {
+                if (config.simulateAdBlock) {
+                    log('✗ PIXEL BLOCKED: Ad blocker prevented the event', 'error');
+                    log('  (In real life, fbq() calls would silently fail)', 'debug');
+                } else if (!config.pixelId) {
+                    log('✗ PIXEL SKIPPED: No Pixel ID configured', 'warn');
+                } else if (typeof fbq === 'undefined') {
+                    log('✗ PIXEL ERROR: fbq not loaded', 'error');
+                } else {
+                    try {
+                        fbq('track', eventName, eventData, { eventID: eventId });
+                        log('✓ PIXEL: Event sent successfully', 'pixel');
+                        log('  Event ID: ' + eventId, 'pixel');
+                        pixelSuccess = true;
+                    } catch (e) {
+                        log('✗ PIXEL ERROR: ' + e.message, 'error');
+                    }
+                }
+            } else {
+                log('○ PIXEL: Disabled by test controls', 'debug');
+            }
+            
+            // ===== CAPI EVENT =====
+            if (config.capiEnabled) {
+                log('Sending CAPI request...', 'debug');
+                
+                const payload = {
+                    eventName: eventName,
+                    eventId: eventId,
+                    eventData: eventData,
+                    userData: {
+                        email: email,
+                        phone: phone,
+                        firstName: firstName,
+                        lastName: lastName,
+                        fbc: fbc,
+                        fbp: fbp
+                    },
+                    eventSourceUrl: window.location.href,
+                    clientUserAgent: navigator.userAgent
+                };
+                
+                try {
+                    const response = await fetch(config.capiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        log('✓ CAPI: Event sent successfully', 'success');
+                        log('  Event ID: ' + data.eventId, 'success');
+                        log('  Events Received: ' + (data.result?.events_received || 1), 'success');
+                        capiSuccess = true;
+                        
+                        if (data.result?.messages?.length > 0) {
+                            data.result.messages.forEach(msg => log('  FB: ' + msg, 'info'));
+                        }
+                    } else {
+                        log('✗ CAPI FAILED: ' + JSON.stringify(data.error || data), 'error');
+                    }
+                } catch (e) {
+                    log('✗ CAPI NETWORK ERROR: ' + e.message, 'error');
+                    log('  Is your backend running at ' + config.capiUrl + '?', 'warn');
+                }
+            } else {
+                log('○ CAPI: Disabled by test controls', 'debug');
+            }
+            
+            // ===== RESULT SUMMARY =====
+            log('────────────────────────────────────────', 'info');
+            if (pixelSuccess && capiSuccess) {
+                log('📊 RESULT: Both channels sent ✓', 'success');
+                log('  Facebook will deduplicate using Event ID', 'success');
+                stats.both++;
+            } else if (pixelSuccess) {
+                log('📊 RESULT: Pixel only ⚠️', 'warn');
+                log('  No server backup if this was blocked', 'warn');
+                stats.pixelOnly++;
+            } else if (capiSuccess) {
+                log('📊 RESULT: CAPI only ✓', 'success');
+                log('  Server-side tracking worked!', 'success');
+                stats.capiOnly++;
+            } else {
+                log('📊 RESULT: No events sent ✗', 'error');
+                log('  Check your configuration', 'error');
+            }
+            
+            updateStats();
+            log('════════════════════════════════════════', 'info');
+        }
+
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
+        window.onload = function() {
+            updateStatusDisplay();
+            log('🧪 Test Lab Ready!', 'success');
+            log('', 'info');
+            log('Quick Start:', 'info');
+            log('1. Enter your Pixel ID and CAPI URL above', 'info');
+            log('2. Click "Update Configuration"', 'info');
+            log('3. Use the scenario buttons to test different cases', 'info');
+            log('4. Click an event button to send test events', 'info');
+            log('', 'info');
+            log('💡 Tip: Open Meta Events Manager → Test Events to see results', 'info');
+        };
+    </script>
+</body>
+</html>
