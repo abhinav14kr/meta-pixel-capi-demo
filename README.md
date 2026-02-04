@@ -2,7 +2,7 @@
 
 A demo for integrating Conversions API (CAPI) with browser Pixel events to enable server-side tracking and event deduplication. The interactive front-end allows you to trigger and view both Pixel and CAPI events in real time, making it easy to test and validate your setup.
 
-**My instance:** [Meta Pixels + CAPI Test](https://abhinav14kr.github.io/pixel/)
+**My instance:** https://abhinav14kr.github.io/pixel/
 
 You can follow the guide to setup front-end with your pixel and track these events directly in Events Manager, ensuring your implementation is working as expected.
 
