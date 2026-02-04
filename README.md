@@ -58,7 +58,7 @@ meta-pixel-capi-demo/
 ## Deploy to Production
 
 - **Backend:**  
-  - Deploy `backend/` to [Render](https://render.com/)  
+  - Deploy `backend/` to [Render](https://render.com/)  or any service that allows free hosting
   - Set `FB_ACCESS_TOKEN` env variable
 
 - **Frontend:**  
