@@ -11,14 +11,14 @@ A demo showing how to set up **Facebook Conversions API (CAPI)** with browser **
 **Benefits:**  
 - Improved data accuracy (server events bypass ad blockers)  
 - Better event matching (server can send hashed user data)  
-- Redundancy (if one fails, the other works)
+- Redundancy (if one fails, the other works and best tested with some browser restrictions enabled to observe CAPI fallback)
 
 ---
 
 ## Project Structure
 
 ```
-meta-capi-demo/
+meta-pixel-capi-demo/
 ├── frontend/      # Static HTML (Pixel + CAPI client)
 ├── backend/       # Node.js Express server (CAPI endpoint)
 └── README.md
@@ -35,7 +35,7 @@ meta-capi-demo/
 
 2. **Clone & Install:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/meta-capi-demo.git
+   git clone https://github.com/YOUR_USERNAME/meta-pixel-capi-demo.git
    cd meta-capi-demo/backend
    npm install
    export FB_ACCESS_TOKEN="your_access_token_here"
