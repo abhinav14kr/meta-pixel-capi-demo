@@ -101,9 +101,13 @@ app.get('/api/test', function(req, res) {
 
 // Main event endpoint
 app.post('/api/event', async function(req, res) {
+    const requestStartTime = Date.now();
+    const requestTimestamp = new Date().toISOString();
+    
     console.log('\n╔════════════════════════════════════════╗');
     console.log('║       INCOMING CAPI REQUEST            ║');
     console.log('╚════════════════════════════════════════╝');
+    console.log('⏱️  Request received at:', requestTimestamp);
 
     // Log the raw request
     console.log('\n📥 Request Body:', JSON.stringify(req.body, null, 2));
@@ -252,6 +256,13 @@ app.post('/api/event', async function(req, res) {
         console.log('\n📨 Facebook Response:');
         console.log('   Status:', response.status, response.ok ? '✓' : '✗');
         console.log('   Body:', JSON.stringify(result, null, 2));
+        
+        const fbResponseTime = Date.now();
+        const totalLatency = fbResponseTime - requestStartTime;
+        console.log('\n⏱️  Timing:');
+        console.log('   Request received:', requestTimestamp);
+        console.log('   FB response at:', new Date().toISOString());
+        console.log('   Total latency:', totalLatency + 'ms');
 
         if (response.ok) {
             console.log('\n✅ SUCCESS: Event sent to Facebook');
@@ -274,7 +285,12 @@ app.post('/api/event', async function(req, res) {
             success: response.ok,
             eventId: eventId,
             eventTime: eventTime,
-            result: result
+            result: result,
+            timing: {
+                requestReceivedAt: requestTimestamp,
+                fbResponseAt: new Date().toISOString(),
+                totalLatencyMs: Date.now() - requestStartTime
+            }
         });
 
     } catch (error) {

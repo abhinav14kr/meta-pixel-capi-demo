@@ -130,6 +130,7 @@
         .log .debug { color: #9b59b6; }
         .log .warn { color: #f39c12; }
         .log .scenario { color: #3498db; font-weight: bold; }
+        .log .timing { color: #1abc9c; }
         
         .status-bar {
             display: flex;
@@ -158,10 +159,10 @@
         .results-summary {
             grid-column: 1 / -1;
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
         }
-        @media (max-width: 768px) { .results-summary { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .results-summary { grid-template-columns: 1fr 1fr; } }
         
         .result-card {
             padding: 15px;
@@ -171,9 +172,10 @@
         .result-card.pixel-only { background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); }
         .result-card.capi-only { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); }
         .result-card.both { background: linear-gradient(135deg, #cce5ff 0%, #b8daff 100%); }
+        .result-card.timing { background: linear-gradient(135deg, #e2d5f1 0%, #d4c4e8 100%); }
         .result-card h3 { margin: 0 0 5px 0; font-size: 14px; }
-        .result-card .count { font-size: 32px; font-weight: bold; }
-        .result-card .label { font-size: 12px; color: #666; }
+        .result-card .count { font-size: 28px; font-weight: bold; }
+        .result-card .label { font-size: 11px; color: #666; }
     </style>
 </head>
 <body>
@@ -263,17 +265,22 @@
             <div class="result-card pixel-only">
                 <h3>🌐 Pixel Only</h3>
                 <div class="count" id="pixelOnlyCount">0</div>
-                <div class="label">Events sent only via Browser</div>
+                <div class="label">Browser events only</div>
             </div>
             <div class="result-card capi-only">
                 <h3>🖥️ CAPI Only</h3>
                 <div class="count" id="capiOnlyCount">0</div>
-                <div class="label">Events sent only via Server</div>
+                <div class="label">Server events only</div>
             </div>
             <div class="result-card both">
-                <h3>✅ Both (Deduplicated)</h3>
+                <h3>✅ Both</h3>
                 <div class="count" id="bothCount">0</div>
-                <div class="label">Events sent via both channels</div>
+                <div class="label">Deduplicated</div>
+            </div>
+            <div class="result-card timing">
+                <h3>⏱️ Avg Latency</h3>
+                <div class="count" id="avgLatency">-</div>
+                <div class="label">CAPI round-trip (ms)</div>
             </div>
         </div>
 
@@ -326,7 +333,8 @@
         let stats = {
             pixelOnly: 0,
             capiOnly: 0,
-            both: 0
+            both: 0,
+            latencies: []
         };
         
         let pixelLoaded = false;
@@ -345,7 +353,7 @@
 
         function clearLog() {
             document.getElementById('log').innerHTML = '[Cleared] Ready for new events...';
-            stats = { pixelOnly: 0, capiOnly: 0, both: 0 };
+            stats = { pixelOnly: 0, capiOnly: 0, both: 0, latencies: [] };
             updateStats();
         }
 
@@ -523,6 +531,13 @@
             document.getElementById('pixelOnlyCount').textContent = stats.pixelOnly;
             document.getElementById('capiOnlyCount').textContent = stats.capiOnly;
             document.getElementById('bothCount').textContent = stats.both;
+            
+            if (stats.latencies.length > 0) {
+                const avg = Math.round(stats.latencies.reduce((a, b) => a + b, 0) / stats.latencies.length);
+                document.getElementById('avgLatency').textContent = avg + 'ms';
+            } else {
+                document.getElementById('avgLatency').textContent = '-';
+            }
         }
 
         // ============================================================
@@ -539,6 +554,8 @@
         // MAIN EVENT FUNCTION
         // ============================================================
         async function sendEvent(eventName) {
+            const frontendStartTime = Date.now();
+            
             const name = document.getElementById('name').value;
             const email = document.getElementById('email').value;
             const phone = document.getElementById('phone').value;
@@ -569,6 +586,7 @@
             log('════════════════════════════════════════', 'info');
             log('🎯 EVENT: ' + eventName, 'info');
             log('Event ID: ' + eventId, 'debug');
+            log('Timestamp: ' + new Date().toISOString(), 'timing');
             log('Configuration:', 'debug');
             log('  Pixel Enabled: ' + config.pixelEnabled, 'debug');
             log('  CAPI Enabled: ' + config.capiEnabled, 'debug');
@@ -602,6 +620,7 @@
             
             // ===== CAPI EVENT =====
             if (config.capiEnabled) {
+                const capiStartTime = Date.now();
                 log('Sending CAPI request...', 'debug');
                 
                 const payload = {
@@ -627,12 +646,24 @@
                         body: JSON.stringify(payload)
                     });
                     
+                    const capiEndTime = Date.now();
+                    const frontendLatency = capiEndTime - capiStartTime;
+                    
                     const data = await response.json();
                     
                     if (data.success) {
                         log('✓ CAPI: Event sent successfully', 'success');
                         log('  Event ID: ' + data.eventId, 'success');
                         log('  Events Received: ' + (data.result?.events_received || 1), 'success');
+                        
+                        // Show timing information
+                        log('  ⏱️  TIMING:', 'timing');
+                        log('     Frontend → Backend → FB → Response: ' + frontendLatency + 'ms', 'timing');
+                        if (data.timing) {
+                            log('     Backend → FB → Backend: ' + data.timing.totalLatencyMs + 'ms', 'timing');
+                        }
+                        
+                        stats.latencies.push(data.timing?.totalLatencyMs || frontendLatency);
                         capiSuccess = true;
                         
                         if (data.result?.messages?.length > 0) {
@@ -650,6 +681,7 @@
             }
             
             // ===== RESULT SUMMARY =====
+            const totalTime = Date.now() - frontendStartTime;
             log('────────────────────────────────────────', 'info');
             if (pixelSuccess && capiSuccess) {
                 log('📊 RESULT: Both channels sent ✓', 'success');
@@ -667,6 +699,7 @@
                 log('📊 RESULT: No events sent ✗', 'error');
                 log('  Check your configuration', 'error');
             }
+            log('⏱️  Total operation time: ' + totalTime + 'ms', 'timing');
             
             updateStats();
             log('════════════════════════════════════════', 'info');
