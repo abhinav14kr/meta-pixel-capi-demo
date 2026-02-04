@@ -2,7 +2,7 @@
 
 A complete working example demonstrating how to set up **Facebook Conversions API (CAPI)** alongside browser **Pixel events** for server-side tracking with event deduplication.
 
-## 🎯 What This Demo Does
+## What This Demo Does
 
 1. **Browser Pixel**: Sends events directly from the user's browser to Facebook
 2. **Server CAPI**: Sends the same events from your backend server to Facebook's Graph API
@@ -25,7 +25,7 @@ meta-capi-demo/
 └── README.md                # This file
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 
@@ -74,7 +74,7 @@ npx serve .
 # Opens at http://localhost:3000
 ```
 
-## ☁️ Production Deployment
+## Production Deployment
 
 ### Deploy Backend to Render.com
 
@@ -243,7 +243,7 @@ Send a server-side event to Facebook CAPI.
 }
 ```
 
-## 📚 Resources
+## Resources
 
 - [Conversions API Documentation](https://developers.facebook.com/docs/marketing-api/conversions-api)
 - [Pixel Documentation](https://developers.facebook.com/docs/meta-pixel)
