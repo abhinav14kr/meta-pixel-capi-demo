@@ -120,6 +120,5 @@ Send server-side event to Facebook CAPI.
 - [Conversions API Docs](https://developers.facebook.com/docs/marketing-api/conversions-api)
 - [Pixel Docs](https://developers.facebook.com/docs/meta-pixel)
 - [Event Deduplication Guide](https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events)
-- [Meta Events Manager](https://business.facebook.com/events_manager)
 
 ---
