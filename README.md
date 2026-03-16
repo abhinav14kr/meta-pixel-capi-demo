@@ -2,7 +2,7 @@
 
 A demo for integrating Conversions API (CAPI) with browser Pixel events to enable server-side tracking and event deduplication. The interactive front-end allows you to trigger and view both Pixel and CAPI events in real time, making it easy to test and validate your setup.
 
-**My instance:** https://abhinav14kr.github.io/pixel/
+**Live demo:** https://abhinav14kr.github.io/meta-pixel-capi-demo/
 
 You can follow the guide to setup front-end with your pixel and track these events directly in Events Manager, ensuring your implementation is working as expected.
 
@@ -25,9 +25,9 @@ You can follow the guide to setup front-end with your pixel and track these even
 
 ```
 meta-pixel-capi-demo/
-├── frontend/          # Static HTML (Pixel + CAPI client)
-│   ├── index.html
-│   └── test-lab.html
+├── docs/              # Static HTML (GitHub Pages source)
+│   ├── index.html     # Simple Pixel + CAPI demo
+│   └── test-lab.html  # Interactive test lab with scenarios
 ├── backend/           # Node.js Express server (CAPI endpoint)
 │   ├── server.js
 │   └── package.json
@@ -54,16 +54,22 @@ meta-pixel-capi-demo/
    ```
 
 3. **Configure Frontend:**
-   - Edit `frontend/index.html`:
+   - Edit `docs/index.html`:
      - Replace `YOUR_PIXEL_ID` (2 places: Pixel init and noscript fallback)
      - Update `PIXEL_ID` constant in the script section
      - Set `CAPI_URL` to your backend (`http://localhost:3000/api/event` or production URL)
+   - Or use `docs/test-lab.html` which lets you configure Pixel ID and CAPI URL directly in the browser
 
 4. **Test Locally:**
    ```bash
-   cd frontend
+   cd docs
    npx serve .
    ```
+
+5. **Enable GitHub Pages (to host your own instance):**
+   - Go to your fork's **Settings > Pages**
+   - Set Branch to `main`, Folder to `/docs`
+   - Click Save — your site will be live at `https://YOUR_USERNAME.github.io/meta-pixel-capi-demo/`
 
 ---
 
@@ -74,7 +80,7 @@ meta-pixel-capi-demo/
   - Set `PIXEL_ID` and `FB_ACCESS_TOKEN` env variables
 
 - **Frontend:**
-  - Deploy `frontend/` to GitHub Pages or any static host
+  - Enable GitHub Pages with source `main` / `/docs`, or deploy `docs/` to any static host
 
 - **CORS:**
   - Add your frontend domain to `ALLOWED_ORIGINS` in `backend/server.js`
