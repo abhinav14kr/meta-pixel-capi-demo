@@ -41,11 +41,11 @@ meta-pixel-capi-demo/
 1. **Prerequisites:**
    - Node.js 18+
    - Facebook Pixel ID
-   - Facebook Access Token (with `ads_management` permission)
+   - Facebook Access Token (System User token with pixel access, or User token with `ads_management` permission)
 
 2. **Clone & Install:**
    ```bash
-   git clone https://github.com/YOUR_USERNAME/meta-pixel-capi-demo.git
+   git clone https://github.com/abhinav14kr/meta-pixel-capi-demo.git
    cd meta-pixel-capi-demo/backend
    npm install
    export PIXEL_ID="your_pixel_id_here"
@@ -115,10 +115,37 @@ Send server-side event to Facebook CAPI.
 
 ---
 
+## Testing with Test Events
+
+To route events to Events Manager's **Test Events** tab (without polluting production data):
+
+1. Go to **Events Manager > Your Pixel > Test Events**
+2. Copy the **Test Event Code** (e.g., `TEST12345`)
+3. Set it as an env var on your backend:
+   ```bash
+   export TEST_EVENT_CODE="TEST12345"
+   ```
+   Or enter it in the Test Lab's Configuration section.
+
+---
+
+## Production Considerations
+
+This demo is designed for testing. For production implementations, also consider:
+
+- **Consent Management**: Pixel should only fire after user consent (GDPR/CCPA)
+- **Limited Data Use (LDU)**: Add `data_processing_options` to the CAPI payload for US users
+- **Opt-Out Handling**: Support `opt_out` field in user_data for users who opt out of tracking
+- **Graph API Versioning**: Update `API_VERSION` in `server.js` periodically as Meta deprecates old versions
+
+---
+
 ## Resources
 
 - [Conversions API Docs](https://developers.facebook.com/docs/marketing-api/conversions-api)
 - [Pixel Docs](https://developers.facebook.com/docs/meta-pixel)
 - [Event Deduplication Guide](https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events)
+- [Test Events](https://developers.facebook.com/docs/marketing-api/conversions-api/using-the-api#test-events)
+- [Limited Data Use](https://developers.facebook.com/docs/marketing-apis/data-processing-options)
 
 ---

@@ -15,7 +15,11 @@ const PIXEL_ID = process.env.PIXEL_ID || 'YOUR_PIXEL_ID';
 // Your Facebook Access Token (set as environment variable - NEVER commit this!)
 const ACCESS_TOKEN = process.env.FB_ACCESS_TOKEN;
 
-// Facebook Graph API version
+// Test Event Code (optional - use for testing without polluting production data)
+// Get this from Events Manager > Test Events tab
+const TEST_EVENT_CODE = process.env.TEST_EVENT_CODE || null;
+
+// Facebook Graph API version (update periodically as Meta deprecates old versions)
 const API_VERSION = 'v21.0';
 
 // CORS Configuration - Add your frontend domains here
@@ -220,6 +224,12 @@ app.post('/api/event', async function(req, res) {
         console.log('   FBP: [provided]');
     }
 
+    // External ID (hashed - useful for cross-platform matching)
+    if (userData.externalId) {
+        userDataPayload.external_id = [hashData(userData.externalId)];
+        console.log('   External ID: [provided] → hashed');
+    }
+
     console.log('   Client IP:', clientIp);
     console.log('   User Agent:', (clientUserAgent || '').substring(0, 50) + '...');
 
@@ -236,19 +246,26 @@ app.post('/api/event', async function(req, res) {
         }]
     };
 
+    // Add test_event_code if configured (routes events to Test Events tab in Events Manager)
+    const testCode = req.body.testEventCode || TEST_EVENT_CODE;
+    if (testCode) {
+        payload.test_event_code = testCode;
+        console.log('\n🧪 Test Event Code:', testCode);
+    }
+
     console.log('\n📤 Facebook API Payload:');
     console.log(JSON.stringify(payload, null, 2));
 
-    // Build the Graph API URL
-    const url = `https://graph.facebook.com/${API_VERSION}/${PIXEL_ID}/events?access_token=${ACCESS_TOKEN}`;
+    // Build the Graph API URL (token sent in request body, not URL, to avoid leaking in logs)
+    const url = `https://graph.facebook.com/${API_VERSION}/${PIXEL_ID}/events`;
     console.log('\n🌐 Calling Facebook Graph API...');
-    console.log('   URL:', `https://graph.facebook.com/${API_VERSION}/${PIXEL_ID}/events`);
+    console.log('   URL:', url);
 
     try {
         const response = await fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ ...payload, access_token: ACCESS_TOKEN })
         });
 
         const result = await response.json();
@@ -315,6 +332,7 @@ app.listen(PORT, function() {
     console.log('🚀 Server running on port:', PORT);
     console.log('📊 Pixel ID:', PIXEL_ID !== 'YOUR_PIXEL_ID' ? 'Configured' : '⚠️  NOT SET');
     console.log('📡 API Version:', API_VERSION);
+    console.log('🧪 Test Event Code:', TEST_EVENT_CODE ? 'Configured' : 'Not set (events go to production)');
 
     if (ACCESS_TOKEN) {
         console.log('🔑 Access Token: Configured');

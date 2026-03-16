@@ -242,7 +242,10 @@
             
             <label for="capiUrl">CAPI Backend URL</label>
             <input type="url" id="capiUrl" placeholder="https://your-backend.onrender.com/api/event" value="http://localhost:3000/api/event">
-            
+
+            <label for="testEventCode">Test Event Code (optional)</label>
+            <input type="text" id="testEventCode" placeholder="From Events Manager > Test Events tab" value="">
+
             <button class="btn-secondary" onclick="updateConfig()" style="width: 100%;">Update Configuration</button>
         </div>
 
@@ -325,6 +328,7 @@
         let config = {
             pixelId: '',
             capiUrl: 'http://localhost:3000/api/event',
+            testEventCode: '',
             pixelEnabled: true,
             capiEnabled: true,
             simulateAdBlock: false
@@ -392,11 +396,13 @@
         function updateConfig() {
             config.pixelId = document.getElementById('pixelId').value.trim();
             config.capiUrl = document.getElementById('capiUrl').value.trim();
+            config.testEventCode = document.getElementById('testEventCode').value.trim();
             
             log('════════════════════════════════════════', 'info');
             log('Configuration Updated:', 'info');
             log('  Pixel ID: ' + (config.pixelId || 'NOT SET'), 'debug');
             log('  CAPI URL: ' + config.capiUrl, 'debug');
+            log('  Test Event Code: ' + (config.testEventCode || 'NOT SET (events go to production)'), 'debug');
             
             if (config.pixelId) {
                 loadPixel(config.pixelId);
@@ -638,6 +644,9 @@
                     eventSourceUrl: window.location.href,
                     clientUserAgent: navigator.userAgent
                 };
+                if (config.testEventCode) {
+                    payload.testEventCode = config.testEventCode;
+                }
                 
                 try {
                     const response = await fetch(config.capiUrl, {
