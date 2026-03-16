@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meta Pixels + CAPI Test Lab</title>
+    <title>Meta Pixel + CAPI Test Lab</title>
     <style>
         * { box-sizing: border-box; }
         body {
@@ -12,24 +12,37 @@
             margin: 30px auto;
             padding: 20px;
             background: #f0f2f5;
+            color: #1c1e21;
         }
-        h1 { color: #1877f2; text-align: center; margin-bottom: 10px; }
-        .subtitle { text-align: center; color: #65676b; margin-bottom: 30px; }
-        
+        h1 { color: #1877f2; text-align: center; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #65676b; margin-bottom: 25px; }
+        .nav { text-align: center; margin-bottom: 20px; font-size: 14px; }
+        .nav a { color: #1877f2; text-decoration: none; font-weight: 500; }
+        .nav a:hover { text-decoration: underline; }
+
         .container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
-        
+
         .card {
             background: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .card h2 { margin-top: 0; color: #1c1e21; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
-        
-        .test-controls { grid-column: 1 / -1; }
-        
-        .toggle-group { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; }
+        .card h2 {
+            margin-top: 0;
+            color: #1c1e21;
+            font-size: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .full-width { grid-column: 1 / -1; }
+
+        /* Toggles */
+        .toggle-group { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 15px; }
         .toggle-item {
             display: flex;
             align-items: center;
@@ -39,62 +52,43 @@
             border-radius: 8px;
             flex: 1;
             min-width: 200px;
+            transition: background 0.2s;
         }
         .toggle-item.disabled { background: #ffebee; }
         .toggle-item.enabled { background: #e8f5e9; }
-        
-        .switch {
-            position: relative;
-            width: 50px;
-            height: 26px;
-        }
+
+        .switch { position: relative; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
         .slider {
-            position: absolute;
-            cursor: pointer;
+            position: absolute; cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #ccc;
-            transition: .3s;
-            border-radius: 26px;
+            background-color: #ccc; transition: .3s; border-radius: 26px;
         }
         .slider:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
+            position: absolute; content: "";
+            height: 20px; width: 20px; left: 3px; bottom: 3px;
+            background-color: white; transition: .3s; border-radius: 50%;
         }
         input:checked + .slider { background-color: #42b72a; }
         input:checked + .slider:before { transform: translateX(24px); }
-        
-        .toggle-label { font-weight: 500; }
+
+        .toggle-label { font-weight: 500; font-size: 14px; }
         .toggle-status { font-size: 12px; color: #65676b; }
-        
+
+        /* Inputs */
         input[type="text"], input[type="email"], input[type="tel"], input[type="url"] {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0 15px 0;
-            border: 1px solid #ddd;
-            border-radius: 6px;
-            font-size: 14px;
+            width: 100%; padding: 10px; margin: 4px 0 12px 0;
+            border: 1px solid #ddd; border-radius: 6px; font-size: 14px;
         }
         input:focus { border-color: #1877f2; outline: none; }
-        label { font-weight: 500; color: #333; font-size: 14px; }
-        
+        label { font-weight: 500; color: #333; font-size: 13px; }
+
+        /* Buttons */
         .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
         button {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            flex: 1;
-            min-width: 120px;
+            padding: 11px 18px; border: none; border-radius: 6px;
+            cursor: pointer; font-size: 13px; font-weight: 600;
+            flex: 1; min-width: 110px; transition: background 0.15s;
         }
         .btn-primary { background: #1877f2; color: white; }
         .btn-primary:hover { background: #166fe5; }
@@ -106,21 +100,49 @@
         .btn-danger:hover { background: #c82333; }
         .btn-secondary { background: #6c757d; color: white; }
         .btn-secondary:hover { background: #5a6268; }
-        
-        .scenario-btns { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
-        .scenario-btns h3 { margin: 0 0 10px 0; font-size: 14px; color: #65676b; }
-        
+        .btn-outline {
+            background: white; color: #1877f2; border: 1px solid #1877f2;
+        }
+        .btn-outline:hover { background: #e7f3ff; }
+
+        /* Scenarios */
+        .scenario-section { margin-top: 15px; padding-top: 15px; border-top: 1px solid #eee; }
+        .scenario-section h3 { margin: 0 0 10px 0; font-size: 13px; color: #65676b; font-weight: 500; }
+
+        /* Status bar */
+        .status-bar { display: flex; gap: 12px; margin-bottom: 15px; flex-wrap: wrap; }
+        .status-item {
+            display: flex; align-items: center; gap: 6px;
+            font-size: 12px; padding: 5px 10px;
+            border-radius: 4px; background: #f0f2f5;
+        }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .status-dot.green { background: #42b72a; }
+        .status-dot.red { background: #dc3545; }
+        .status-dot.yellow { background: #f0ad4e; }
+
+        /* Results summary */
+        .results-summary {
+            grid-column: 1 / -1;
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;
+        }
+        @media (max-width: 768px) { .results-summary { grid-template-columns: 1fr 1fr; } }
+        .result-card { padding: 15px; border-radius: 8px; text-align: center; }
+        .result-card.pixel-only { background: #fff3cd; }
+        .result-card.capi-only { background: #d4edda; }
+        .result-card.both { background: #cce5ff; }
+        .result-card.timing-card { background: #e2d5f1; }
+        .result-card h3 { margin: 0 0 4px 0; font-size: 13px; color: #444; }
+        .result-card .count { font-size: 28px; font-weight: bold; color: #1c1e21; }
+        .result-card .label { font-size: 11px; color: #666; }
+
+        /* Log */
         .log {
-            background: #1e1e1e;
-            color: #0f0;
-            padding: 15px;
-            border-radius: 8px;
-            font-family: 'Monaco', 'Consolas', monospace;
-            font-size: 11px;
-            height: 400px;
-            overflow-y: auto;
-            white-space: pre-wrap;
-            word-break: break-all;
+            background: #1e1e1e; color: #d4d4d4;
+            padding: 15px; border-radius: 8px;
+            font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+            font-size: 11px; height: 400px;
+            overflow-y: auto; white-space: pre-wrap; word-break: break-all;
         }
         .log .info { color: #61dafb; }
         .log .pixel { color: #f1c40f; }
@@ -131,62 +153,18 @@
         .log .warn { color: #f39c12; }
         .log .scenario { color: #3498db; font-weight: bold; }
         .log .timing { color: #1abc9c; }
-        
-        .status-bar {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        .status-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 12px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            background: #f0f2f5;
-        }
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-        }
-        .status-dot.green { background: #42b72a; }
-        .status-dot.red { background: #dc3545; }
-        .status-dot.yellow { background: #f0ad4e; }
-        
-        .results-summary {
-            grid-column: 1 / -1;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-        }
-        @media (max-width: 768px) { .results-summary { grid-template-columns: 1fr 1fr; } }
-        
-        .result-card {
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .result-card.pixel-only { background: linear-gradient(135deg, #fff3cd 0%, #ffeeba 100%); }
-        .result-card.capi-only { background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%); }
-        .result-card.both { background: linear-gradient(135deg, #cce5ff 0%, #b8daff 100%); }
-        .result-card.timing { background: linear-gradient(135deg, #e2d5f1 0%, #d4c4e8 100%); }
-        .result-card h3 { margin: 0 0 5px 0; font-size: 14px; }
-        .result-card .count { font-size: 28px; font-weight: bold; }
-        .result-card .label { font-size: 11px; color: #666; }
     </style>
 </head>
 <body>
-    <h1>🧪 Meta Pixels + CAPI Test Lab</h1>
+    <h1>Meta Pixel + CAPI Test Lab</h1>
     <p class="subtitle">Test different scenarios to understand how Pixel and CAPI work together</p>
+    <p class="nav"><a href="index.html">Back to Simple Mode</a></p>
 
     <div class="container">
         <!-- Test Controls -->
-        <div class="card test-controls">
-            <h2>🎛️ Test Controls</h2>
-            
+        <div class="card full-width">
+            <h2>Test Controls</h2>
+
             <div class="toggle-group">
                 <div class="toggle-item enabled" id="pixelToggleItem">
                     <label class="switch">
@@ -195,10 +173,10 @@
                     </label>
                     <div>
                         <div class="toggle-label">Browser Pixel</div>
-                        <div class="toggle-status" id="pixelStatus">Enabled - Events sent via fbq()</div>
+                        <div class="toggle-status" id="pixelStatus">Enabled — events sent via fbq()</div>
                     </div>
                 </div>
-                
+
                 <div class="toggle-item enabled" id="capiToggleItem">
                     <label class="switch">
                         <input type="checkbox" id="capiEnabled" checked>
@@ -206,10 +184,10 @@
                     </label>
                     <div>
                         <div class="toggle-label">Server CAPI</div>
-                        <div class="toggle-status" id="capiStatus">Enabled - Events sent to backend</div>
+                        <div class="toggle-status" id="capiStatus">Enabled — events sent to backend</div>
                     </div>
                 </div>
-                
+
                 <div class="toggle-item enabled" id="adBlockToggleItem">
                     <label class="switch">
                         <input type="checkbox" id="simulateAdBlock">
@@ -217,48 +195,48 @@
                     </label>
                     <div>
                         <div class="toggle-label">Simulate Ad Blocker</div>
-                        <div class="toggle-status" id="adBlockStatus">Off - Pixel works normally</div>
+                        <div class="toggle-status" id="adBlockStatus">Off — Pixel works normally</div>
                     </div>
                 </div>
             </div>
-            
-            <div class="scenario-btns">
-                <h3>Quick Test Scenarios:</h3>
+
+            <div class="scenario-section">
+                <h3>Quick Scenarios</h3>
                 <div class="btn-group">
-                    <button class="btn-primary" onclick="setScenario('both')">✅ Both Working</button>
-                    <button class="btn-warning" onclick="setScenario('pixelOnly')">🌐 Pixel Only</button>
-                    <button class="btn-success" onclick="setScenario('capiOnly')">🖥️ CAPI Only</button>
-                    <button class="btn-danger" onclick="setScenario('adBlocked')">🚫 Ad Blocked</button>
+                    <button class="btn-primary" onclick="setScenario('both')">Both Working</button>
+                    <button class="btn-warning" onclick="setScenario('pixelOnly')">Pixel Only</button>
+                    <button class="btn-success" onclick="setScenario('capiOnly')">CAPI Only</button>
+                    <button class="btn-danger" onclick="setScenario('adBlocked')">Ad Blocked</button>
                 </div>
             </div>
         </div>
 
         <!-- Configuration -->
         <div class="card">
-            <h2>⚙️ Configuration</h2>
-            
+            <h2>Configuration</h2>
+
             <label for="pixelId">Pixel ID</label>
             <input type="text" id="pixelId" placeholder="Enter your Pixel ID" value="">
-            
+
             <label for="capiUrl">CAPI Backend URL</label>
-            <input type="url" id="capiUrl" placeholder="https://your-backend.onrender.com/api/event" value="http://localhost:3000/api/event">
+            <input type="url" id="capiUrl" placeholder="https://your-backend.onrender.com/api/event" value="">
 
             <label for="testEventCode">Test Event Code (optional)</label>
             <input type="text" id="testEventCode" placeholder="From Events Manager > Test Events tab" value="">
 
-            <button class="btn-secondary" onclick="updateConfig()" style="width: 100%;">Update Configuration</button>
+            <button class="btn-secondary" onclick="updateConfig()" style="width: 100%;">Save Configuration</button>
         </div>
 
         <!-- User Data -->
         <div class="card">
-            <h2>👤 User Data</h2>
-            
+            <h2>User Data</h2>
+
             <label for="name">Full Name</label>
             <input type="text" id="name" placeholder="John Doe" value="Test User">
-            
+
             <label for="email">Email</label>
             <input type="email" id="email" placeholder="test@example.com" value="test@example.com">
-            
+
             <label for="phone">Phone (optional)</label>
             <input type="tel" id="phone" placeholder="+1234567890" value="">
         </div>
@@ -266,30 +244,30 @@
         <!-- Results Summary -->
         <div class="results-summary">
             <div class="result-card pixel-only">
-                <h3>🌐 Pixel Only</h3>
+                <h3>Pixel Only</h3>
                 <div class="count" id="pixelOnlyCount">0</div>
                 <div class="label">Browser events only</div>
             </div>
             <div class="result-card capi-only">
-                <h3>🖥️ CAPI Only</h3>
+                <h3>CAPI Only</h3>
                 <div class="count" id="capiOnlyCount">0</div>
                 <div class="label">Server events only</div>
             </div>
             <div class="result-card both">
-                <h3>✅ Both</h3>
+                <h3>Both</h3>
                 <div class="count" id="bothCount">0</div>
                 <div class="label">Deduplicated</div>
             </div>
-            <div class="result-card timing">
-                <h3>⏱️ Avg Latency</h3>
+            <div class="result-card timing-card">
+                <h3>Avg Latency</h3>
                 <div class="count" id="avgLatency">-</div>
                 <div class="label">CAPI round-trip (ms)</div>
             </div>
         </div>
 
         <!-- Event Buttons -->
-        <div class="card" style="grid-column: 1 / -1;">
-            <h2>🎯 Send Test Events</h2>
+        <div class="card full-width">
+            <h2>Send Test Events</h2>
             <div class="status-bar">
                 <div class="status-item">
                     <span class="status-dot" id="pixelDot"></span>
@@ -305,42 +283,35 @@
                 </div>
             </div>
             <div class="btn-group">
-                <button class="btn-primary" onclick="sendEvent('AddToCart')">🛒 Add to Cart</button>
-                <button class="btn-success" onclick="sendEvent('AddToWishlist')">❤️ Add to Wishlist</button>
-                <button class="btn-warning" onclick="sendEvent('ViewContent')">👁️ View Content</button>
-                <button class="btn-danger" onclick="sendEvent('Purchase')">💳 Purchase</button>
-                <button class="btn-secondary" onclick="clearLog()">🗑️ Clear Log</button>
+                <button class="btn-primary" onclick="sendEvent('AddToCart')">Add to Cart</button>
+                <button class="btn-success" onclick="sendEvent('AddToWishlist')">Add to Wishlist</button>
+                <button class="btn-warning" onclick="sendEvent('ViewContent')">View Content</button>
+                <button class="btn-danger" onclick="sendEvent('Purchase')">Purchase</button>
+                <button class="btn-outline" onclick="clearLog()">Clear Log</button>
             </div>
         </div>
 
         <!-- Event Log -->
-        <div class="card" style="grid-column: 1 / -1;">
-            <h2>📋 Event Log</h2>
-            <div class="log" id="log">[Ready] Test Lab initialized. Configure your Pixel ID and CAPI URL above.</div>
+        <div class="card full-width">
+            <h2>Event Log</h2>
+            <div class="log" id="log">[Ready] Configure your Pixel ID and CAPI URL above, then send events.</div>
         </div>
     </div>
 
-    <!-- Facebook Pixel Code (loaded dynamically) -->
     <script>
         // ============================================================
         // STATE
         // ============================================================
         let config = {
             pixelId: '',
-            capiUrl: 'http://localhost:3000/api/event',
+            capiUrl: '',
             testEventCode: '',
             pixelEnabled: true,
             capiEnabled: true,
             simulateAdBlock: false
         };
-        
-        let stats = {
-            pixelOnly: 0,
-            capiOnly: 0,
-            both: 0,
-            latencies: []
-        };
-        
+
+        let stats = { pixelOnly: 0, capiOnly: 0, both: 0, latencies: [] };
         let pixelLoaded = false;
 
         // ============================================================
@@ -356,7 +327,7 @@
         }
 
         function clearLog() {
-            document.getElementById('log').innerHTML = '[Cleared] Ready for new events...';
+            document.getElementById('log').innerHTML = '[Cleared] Ready for new events.';
             stats = { pixelOnly: 0, capiOnly: 0, both: 0, latencies: [] };
             updateStats();
         }
@@ -365,16 +336,15 @@
         // PIXEL LOADING
         // ============================================================
         function loadPixel(pixelId) {
-            if (!pixelId || pixelId === 'YOUR_PIXEL_ID') {
-                log('⚠️ Pixel ID not configured. Enter your Pixel ID above.', 'warn');
+            if (!pixelId) {
+                log('Pixel ID not configured. Enter your Pixel ID above.', 'warn');
                 return false;
             }
-            
+
             if (pixelLoaded) {
-                log('Pixel already loaded. Reinitializing with new ID...', 'debug');
+                log('Pixel already loaded. Reinitializing with new ID.', 'debug');
             }
-            
-            // Load Facebook Pixel
+
             !function(f,b,e,v,n,t,s)
             {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
             n.callMethod.apply(n,arguments):n.queue.push(arguments)};
@@ -383,10 +353,10 @@
             t.src=v;s=b.getElementsByTagName(e)[0];
             s.parentNode.insertBefore(t,s)}(window, document,'script',
             'https://connect.facebook.net/en_US/fbevents.js');
-            
+
             fbq('init', pixelId);
             pixelLoaded = true;
-            log('✓ Pixel loaded with ID: ' + pixelId, 'success');
+            log('Pixel loaded with ID: ' + pixelId, 'success');
             return true;
         }
 
@@ -397,19 +367,19 @@
             config.pixelId = document.getElementById('pixelId').value.trim();
             config.capiUrl = document.getElementById('capiUrl').value.trim();
             config.testEventCode = document.getElementById('testEventCode').value.trim();
-            
-            log('════════════════════════════════════════', 'info');
-            log('Configuration Updated:', 'info');
-            log('  Pixel ID: ' + (config.pixelId || 'NOT SET'), 'debug');
-            log('  CAPI URL: ' + config.capiUrl, 'debug');
-            log('  Test Event Code: ' + (config.testEventCode || 'NOT SET (events go to production)'), 'debug');
-            
+
+            log('----------------------------------------', 'info');
+            log('Configuration updated', 'info');
+            log('  Pixel ID: ' + (config.pixelId || 'not set'), 'debug');
+            log('  CAPI URL: ' + (config.capiUrl || 'not set'), 'debug');
+            log('  Test Event Code: ' + (config.testEventCode || 'not set — events go to production'), 'debug');
+
             if (config.pixelId) {
                 loadPixel(config.pixelId);
             }
-            
+
             updateStatusDisplay();
-            log('════════════════════════════════════════', 'info');
+            log('----------------------------------------', 'info');
         }
 
         // ============================================================
@@ -418,53 +388,53 @@
         document.getElementById('pixelEnabled').addEventListener('change', function() {
             config.pixelEnabled = this.checked;
             updateToggleDisplay('pixel', this.checked);
-            log('Browser Pixel: ' + (this.checked ? 'ENABLED' : 'DISABLED'), this.checked ? 'success' : 'warn');
+            log('Browser Pixel ' + (this.checked ? 'enabled' : 'disabled'), this.checked ? 'success' : 'warn');
         });
 
         document.getElementById('capiEnabled').addEventListener('change', function() {
             config.capiEnabled = this.checked;
             updateToggleDisplay('capi', this.checked);
-            log('Server CAPI: ' + (this.checked ? 'ENABLED' : 'DISABLED'), this.checked ? 'success' : 'warn');
+            log('Server CAPI ' + (this.checked ? 'enabled' : 'disabled'), this.checked ? 'success' : 'warn');
         });
 
         document.getElementById('simulateAdBlock').addEventListener('change', function() {
             config.simulateAdBlock = this.checked;
             updateToggleDisplay('adBlock', this.checked);
-            log('Ad Blocker Simulation: ' + (this.checked ? 'ON - Pixel will fail' : 'OFF'), this.checked ? 'warn' : 'info');
+            log('Ad Blocker simulation ' + (this.checked ? 'on — Pixel will fail' : 'off'), this.checked ? 'warn' : 'info');
         });
 
         function updateToggleDisplay(type, enabled) {
-            const item = document.getElementById(type + 'ToggleItem');
-            const status = document.getElementById(type + 'Status');
-            
+            var item = document.getElementById(type + 'ToggleItem');
+            var status = document.getElementById(type + 'Status');
+
             if (type === 'adBlock') {
                 item.className = 'toggle-item ' + (enabled ? 'disabled' : 'enabled');
-                status.textContent = enabled ? 'On - Simulating blocked Pixel' : 'Off - Pixel works normally';
+                status.textContent = enabled ? 'On — simulating blocked Pixel' : 'Off — Pixel works normally';
             } else {
                 item.className = 'toggle-item ' + (enabled ? 'enabled' : 'disabled');
                 if (type === 'pixel') {
-                    status.textContent = enabled ? 'Enabled - Events sent via fbq()' : 'Disabled - No browser events';
+                    status.textContent = enabled ? 'Enabled — events sent via fbq()' : 'Disabled — no browser events';
                 } else {
-                    status.textContent = enabled ? 'Enabled - Events sent to backend' : 'Disabled - No server events';
+                    status.textContent = enabled ? 'Enabled — events sent to backend' : 'Disabled — no server events';
                 }
             }
             updateStatusDisplay();
         }
 
         function updateStatusDisplay() {
-            const pixelDot = document.getElementById('pixelDot');
-            const capiDot = document.getElementById('capiDot');
-            const adBlockDot = document.getElementById('adBlockDot');
-            
+            var pixelDot = document.getElementById('pixelDot');
+            var capiDot = document.getElementById('capiDot');
+            var adBlockDot = document.getElementById('adBlockDot');
+
             pixelDot.className = 'status-dot ' + (config.pixelEnabled && !config.simulateAdBlock ? 'green' : 'red');
-            document.getElementById('pixelStatusText').textContent = 
-                !config.pixelEnabled ? 'Disabled' : 
-                config.simulateAdBlock ? 'Blocked' : 
+            document.getElementById('pixelStatusText').textContent =
+                !config.pixelEnabled ? 'Disabled' :
+                config.simulateAdBlock ? 'Blocked' :
                 config.pixelId ? 'Ready' : 'No ID';
-            
+
             capiDot.className = 'status-dot ' + (config.capiEnabled ? 'green' : 'red');
             document.getElementById('capiStatusText').textContent = config.capiEnabled ? 'Ready' : 'Disabled';
-            
+
             adBlockDot.className = 'status-dot ' + (config.simulateAdBlock ? 'yellow' : 'green');
             document.getElementById('adBlockStatusText').textContent = config.simulateAdBlock ? 'On' : 'Off';
         }
@@ -473,12 +443,12 @@
         // SCENARIO PRESETS
         // ============================================================
         function setScenario(scenario) {
-            log('════════════════════════════════════════', 'scenario');
-            
+            log('========================================', 'scenario');
+
             switch(scenario) {
                 case 'both':
-                    log('📋 SCENARIO: Both Pixel and CAPI Working', 'scenario');
-                    log('This is the ideal setup for deduplication.', 'info');
+                    log('SCENARIO: Both Pixel and CAPI', 'scenario');
+                    log('Ideal setup — events are deduplicated via shared Event ID.', 'info');
                     document.getElementById('pixelEnabled').checked = true;
                     document.getElementById('capiEnabled').checked = true;
                     document.getElementById('simulateAdBlock').checked = false;
@@ -486,11 +456,10 @@
                     config.capiEnabled = true;
                     config.simulateAdBlock = false;
                     break;
-                    
+
                 case 'pixelOnly':
-                    log('📋 SCENARIO: Pixel Only (No CAPI)', 'scenario');
-                    log('Simulates a setup without server-side tracking.', 'info');
-                    log('⚠️ Events may be missed if user has ad blocker!', 'warn');
+                    log('SCENARIO: Pixel Only (no CAPI)', 'scenario');
+                    log('Browser-only tracking. Events may be lost if the user has an ad blocker.', 'info');
                     document.getElementById('pixelEnabled').checked = true;
                     document.getElementById('capiEnabled').checked = false;
                     document.getElementById('simulateAdBlock').checked = false;
@@ -498,11 +467,10 @@
                     config.capiEnabled = false;
                     config.simulateAdBlock = false;
                     break;
-                    
+
                 case 'capiOnly':
-                    log('📋 SCENARIO: CAPI Only (No Browser Pixel)', 'scenario');
-                    log('Simulates server-side only tracking.', 'info');
-                    log('✓ Works even with ad blockers!', 'success');
+                    log('SCENARIO: CAPI Only (no browser Pixel)', 'scenario');
+                    log('Server-side only. Works even with ad blockers.', 'info');
                     document.getElementById('pixelEnabled').checked = false;
                     document.getElementById('capiEnabled').checked = true;
                     document.getElementById('simulateAdBlock').checked = false;
@@ -510,11 +478,10 @@
                     config.capiEnabled = true;
                     config.simulateAdBlock = false;
                     break;
-                    
+
                 case 'adBlocked':
-                    log('📋 SCENARIO: Ad Blocker Active', 'scenario');
-                    log('Simulates a user with an ad blocker installed.', 'info');
-                    log('Pixel will fail, but CAPI will still work!', 'warn');
+                    log('SCENARIO: Ad Blocker Active', 'scenario');
+                    log('Pixel will fail, but CAPI still delivers. This shows why server-side matters.', 'info');
                     document.getElementById('pixelEnabled').checked = true;
                     document.getElementById('capiEnabled').checked = true;
                     document.getElementById('simulateAdBlock').checked = true;
@@ -523,11 +490,11 @@
                     config.simulateAdBlock = true;
                     break;
             }
-            
+
             updateToggleDisplay('pixel', config.pixelEnabled);
             updateToggleDisplay('capi', config.capiEnabled);
             updateToggleDisplay('adBlock', config.simulateAdBlock);
-            log('════════════════════════════════════════', 'scenario');
+            log('========================================', 'scenario');
         }
 
         // ============================================================
@@ -537,9 +504,9 @@
             document.getElementById('pixelOnlyCount').textContent = stats.pixelOnly;
             document.getElementById('capiOnlyCount').textContent = stats.capiOnly;
             document.getElementById('bothCount').textContent = stats.both;
-            
+
             if (stats.latencies.length > 0) {
-                const avg = Math.round(stats.latencies.reduce((a, b) => a + b, 0) / stats.latencies.length);
+                var avg = Math.round(stats.latencies.reduce(function(a, b) { return a + b; }, 0) / stats.latencies.length);
                 document.getElementById('avgLatency').textContent = avg + 'ms';
             } else {
                 document.getElementById('avgLatency').textContent = '-';
@@ -550,8 +517,8 @@
         // COOKIE HELPER
         // ============================================================
         function getCookie(name) {
-            const value = '; ' + document.cookie;
-            const parts = value.split('; ' + name + '=');
+            var value = '; ' + document.cookie;
+            var parts = value.split('; ' + name + '=');
             if (parts.length === 2) return parts.pop().split(';').shift();
             return null;
         }
@@ -560,158 +527,154 @@
         // MAIN EVENT FUNCTION
         // ============================================================
         async function sendEvent(eventName) {
-            const frontendStartTime = Date.now();
-            
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            
-            if (!name || !email) {
-                alert('Please enter name and email');
+            var frontendStartTime = Date.now();
+
+            var nameVal = document.getElementById('name').value;
+            var email = document.getElementById('email').value;
+            var phone = document.getElementById('phone').value;
+
+            if (!nameVal || !email) {
+                alert('Please enter a name and email.');
                 return;
             }
-            
-            const names = name.trim().split(' ');
-            const firstName = names[0] || '';
-            const lastName = names.slice(1).join(' ') || '';
-            
-            // Generate unique Event ID for deduplication
-            const eventId = eventName + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            
-            const eventData = {
+
+            if (!config.pixelId && !config.capiUrl) {
+                alert('Please configure at least a Pixel ID or CAPI URL above.');
+                return;
+            }
+
+            var names = nameVal.trim().split(' ');
+            var firstName = names[0] || '';
+            var lastName = names.slice(1).join(' ') || '';
+
+            var eventId = eventName + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+            var eventData = {
                 content_name: 'Test Product',
                 content_ids: ['PROD-1234'],
                 content_type: 'product',
                 value: 49.99,
                 currency: 'USD'
             };
-            
-            const fbc = getCookie('_fbc');
-            const fbp = getCookie('_fbp');
-            
-            log('════════════════════════════════════════', 'info');
-            log('🎯 EVENT: ' + eventName, 'info');
+
+            var fbc = getCookie('_fbc');
+            var fbp = getCookie('_fbp');
+
+            log('========================================', 'info');
+            log('EVENT: ' + eventName, 'info');
             log('Event ID: ' + eventId, 'debug');
             log('Timestamp: ' + new Date().toISOString(), 'timing');
-            log('Configuration:', 'debug');
-            log('  Pixel Enabled: ' + config.pixelEnabled, 'debug');
-            log('  CAPI Enabled: ' + config.capiEnabled, 'debug');
-            log('  Ad Block Sim: ' + config.simulateAdBlock, 'debug');
-            
-            let pixelSuccess = false;
-            let capiSuccess = false;
-            
-            // ===== PIXEL EVENT =====
+            log('Config: Pixel=' + config.pixelEnabled + ', CAPI=' + config.capiEnabled + ', AdBlock=' + config.simulateAdBlock, 'debug');
+
+            var pixelSuccess = false;
+            var capiSuccess = false;
+
+            // --- Pixel Event ---
             if (config.pixelEnabled) {
                 if (config.simulateAdBlock) {
-                    log('✗ PIXEL BLOCKED: Ad blocker prevented the event', 'error');
-                    log('  (In real life, fbq() calls would silently fail)', 'debug');
+                    log('PIXEL BLOCKED: Ad blocker prevented the event', 'error');
+                    log('  (In practice, fbq() calls would silently fail)', 'debug');
                 } else if (!config.pixelId) {
-                    log('✗ PIXEL SKIPPED: No Pixel ID configured', 'warn');
+                    log('PIXEL SKIPPED: No Pixel ID configured', 'warn');
                 } else if (typeof fbq === 'undefined') {
-                    log('✗ PIXEL ERROR: fbq not loaded', 'error');
+                    log('PIXEL ERROR: fbq not loaded', 'error');
                 } else {
                     try {
                         fbq('track', eventName, eventData, { eventID: eventId });
-                        log('✓ PIXEL: Event sent successfully', 'pixel');
+                        log('PIXEL OK: Event sent', 'pixel');
                         log('  Event ID: ' + eventId, 'pixel');
                         pixelSuccess = true;
                     } catch (e) {
-                        log('✗ PIXEL ERROR: ' + e.message, 'error');
+                        log('PIXEL ERROR: ' + e.message, 'error');
                     }
                 }
             } else {
-                log('○ PIXEL: Disabled by test controls', 'debug');
+                log('PIXEL: Disabled by test controls', 'debug');
             }
-            
-            // ===== CAPI EVENT =====
+
+            // --- CAPI Event ---
             if (config.capiEnabled) {
-                const capiStartTime = Date.now();
-                log('Sending CAPI request...', 'debug');
-                
-                const payload = {
-                    eventName: eventName,
-                    eventId: eventId,
-                    eventData: eventData,
-                    userData: {
-                        email: email,
-                        phone: phone,
-                        firstName: firstName,
-                        lastName: lastName,
-                        fbc: fbc,
-                        fbp: fbp
-                    },
-                    eventSourceUrl: window.location.href,
-                    clientUserAgent: navigator.userAgent
-                };
-                if (config.testEventCode) {
-                    payload.testEventCode = config.testEventCode;
-                }
-                
-                try {
-                    const response = await fetch(config.capiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    
-                    const capiEndTime = Date.now();
-                    const frontendLatency = capiEndTime - capiStartTime;
-                    
-                    const data = await response.json();
-                    
-                    if (data.success) {
-                        log('✓ CAPI: Event sent successfully', 'success');
-                        log('  Event ID: ' + data.eventId, 'success');
-                        log('  Events Received: ' + (data.result?.events_received || 1), 'success');
-                        
-                        // Show timing information
-                        log('  ⏱️  TIMING:', 'timing');
-                        log('     Frontend → Backend → FB → Response: ' + frontendLatency + 'ms', 'timing');
-                        if (data.timing) {
-                            log('     Backend → FB → Backend: ' + data.timing.totalLatencyMs + 'ms', 'timing');
-                        }
-                        
-                        stats.latencies.push(data.timing?.totalLatencyMs || frontendLatency);
-                        capiSuccess = true;
-                        
-                        if (data.result?.messages?.length > 0) {
-                            data.result.messages.forEach(msg => log('  FB: ' + msg, 'info'));
-                        }
-                    } else {
-                        log('✗ CAPI FAILED: ' + JSON.stringify(data.error || data), 'error');
+                if (!config.capiUrl) {
+                    log('CAPI SKIPPED: No CAPI URL configured', 'warn');
+                } else {
+                    var capiStartTime = Date.now();
+                    log('Sending CAPI request...', 'debug');
+
+                    var payload = {
+                        eventName: eventName,
+                        eventId: eventId,
+                        eventData: eventData,
+                        userData: {
+                            email: email,
+                            phone: phone,
+                            firstName: firstName,
+                            lastName: lastName,
+                            fbc: fbc,
+                            fbp: fbp
+                        },
+                        eventSourceUrl: window.location.href,
+                        clientUserAgent: navigator.userAgent
+                    };
+                    if (config.testEventCode) {
+                        payload.testEventCode = config.testEventCode;
                     }
-                } catch (e) {
-                    log('✗ CAPI NETWORK ERROR: ' + e.message, 'error');
-                    log('  Is your backend running at ' + config.capiUrl + '?', 'warn');
+
+                    try {
+                        var response = await fetch(config.capiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        var frontendLatency = Date.now() - capiStartTime;
+                        var data = await response.json();
+
+                        if (data.success) {
+                            log('CAPI OK: Event sent', 'success');
+                            log('  Event ID: ' + data.eventId, 'success');
+                            log('  Events received: ' + (data.result?.events_received || 1), 'success');
+                            log('  Round-trip: ' + frontendLatency + 'ms', 'timing');
+                            if (data.timing) {
+                                log('  Backend latency: ' + data.timing.totalLatencyMs + 'ms', 'timing');
+                            }
+                            stats.latencies.push(data.timing?.totalLatencyMs || frontendLatency);
+                            capiSuccess = true;
+
+                            if (data.result?.messages?.length > 0) {
+                                data.result.messages.forEach(function(msg) { log('  FB: ' + msg, 'info'); });
+                            }
+                        } else {
+                            log('CAPI FAILED: ' + JSON.stringify(data.error || data), 'error');
+                        }
+                    } catch (e) {
+                        log('CAPI NETWORK ERROR: ' + e.message, 'error');
+                        log('  Is your backend running at ' + config.capiUrl + '?', 'warn');
+                    }
                 }
             } else {
-                log('○ CAPI: Disabled by test controls', 'debug');
+                log('CAPI: Disabled by test controls', 'debug');
             }
-            
-            // ===== RESULT SUMMARY =====
-            const totalTime = Date.now() - frontendStartTime;
-            log('────────────────────────────────────────', 'info');
+
+            // --- Result Summary ---
+            var totalTime = Date.now() - frontendStartTime;
+            log('----------------------------------------', 'info');
             if (pixelSuccess && capiSuccess) {
-                log('📊 RESULT: Both channels sent ✓', 'success');
+                log('RESULT: Both channels sent', 'success');
                 log('  Facebook will deduplicate using Event ID', 'success');
                 stats.both++;
             } else if (pixelSuccess) {
-                log('📊 RESULT: Pixel only ⚠️', 'warn');
-                log('  No server backup if this was blocked', 'warn');
+                log('RESULT: Pixel only — no server backup', 'warn');
                 stats.pixelOnly++;
             } else if (capiSuccess) {
-                log('📊 RESULT: CAPI only ✓', 'success');
-                log('  Server-side tracking worked!', 'success');
+                log('RESULT: CAPI only — server-side tracking worked', 'success');
                 stats.capiOnly++;
             } else {
-                log('📊 RESULT: No events sent ✗', 'error');
-                log('  Check your configuration', 'error');
+                log('RESULT: No events sent — check your configuration', 'error');
             }
-            log('⏱️  Total operation time: ' + totalTime + 'ms', 'timing');
-            
+            log('Total time: ' + totalTime + 'ms', 'timing');
+
             updateStats();
-            log('════════════════════════════════════════', 'info');
+            log('========================================', 'info');
         }
 
         // ============================================================
@@ -719,15 +682,13 @@
         // ============================================================
         window.onload = function() {
             updateStatusDisplay();
-            log('🧪 Test Lab Ready!', 'success');
+            log('Test Lab ready.', 'success');
             log('', 'info');
-            log('Quick Start:', 'info');
-            log('1. Enter your Pixel ID and CAPI URL above', 'info');
-            log('2. Click "Update Configuration"', 'info');
-            log('3. Use the scenario buttons to test different cases', 'info');
-            log('4. Click an event button to send test events', 'info');
-            log('', 'info');
-            log('💡 Tip: Open Meta Events Manager → Test Events to see results', 'info');
+            log('Quick start:', 'info');
+            log('1. Enter your Pixel ID and CAPI URL, then click Save Configuration', 'info');
+            log('2. Choose a scenario (or leave defaults)', 'info');
+            log('3. Click an event button to send a test event', 'info');
+            log('4. Check Events Manager > Test Events to verify', 'info');
         };
     </script>
 </body>

@@ -74,12 +74,12 @@
     </style>
 </head>
 <body>
-    <h1>🔵 Meta Pixels + CAPI Test</h1>
+    <h1>Meta Pixel + CAPI Test</h1>
     <p class="nav">Simple mode · <a href="test-lab.html">Switch to Test Lab (advanced)</a></p>
 
     <!-- Configuration -->
     <div class="card">
-        <h2>⚙️ Configuration</h2>
+        <h2>Configuration</h2>
 
         <label for="pixelId">Pixel ID</label>
         <input type="text" id="pixelId" placeholder="Enter your Facebook Pixel ID" value="">
@@ -95,7 +95,7 @@
 
     <!-- User Data & Events -->
     <div class="card">
-        <h2>👤 User Data & Events</h2>
+        <h2>User Data & Events</h2>
 
         <label for="name">Full Name</label>
         <input type="text" id="name" placeholder="Enter your name" value="">
@@ -106,8 +106,8 @@
         <label for="phone">Phone Number (optional)</label>
         <input type="tel" id="phone" placeholder="Enter your phone" value="">
 
-        <button type="button" class="btn-primary" id="cartBtn">🛒 Add to Cart</button>
-        <button type="button" class="btn-success" id="wishBtn">❤️ Add to Wishlist</button>
+        <button type="button" class="btn-primary" id="cartBtn">Add to Cart</button>
+        <button type="button" class="btn-success" id="wishBtn">Add to Wishlist</button>
     </div>
 
     <div class="log" id="log">[Ready] Configure your Pixel ID and CAPI URL above, then send events.</div>
@@ -141,7 +141,7 @@
         // ============================================================
         function loadPixel(pixelId) {
             if (!pixelId) {
-                log('⚠️ Pixel ID not configured. Enter your Pixel ID above.', 'warn');
+                log('Pixel ID not configured. Enter your Pixel ID above.', 'warn');
                 return false;
             }
 
@@ -161,7 +161,7 @@
             fbq('init', pixelId);
             fbq('track', 'PageView');
             pixelLoaded = true;
-            log('✓ Pixel loaded with ID: ' + pixelId, 'success');
+            log('Pixel loaded with ID: ' + pixelId, 'success');
             log('PageView event sent via Pixel', 'pixel');
             return true;
         }
@@ -174,7 +174,7 @@
             config.capiUrl = document.getElementById('capiUrl').value.trim();
             config.testEventCode = document.getElementById('testEventCode').value.trim();
 
-            log('════════════════════════════════════════', 'info');
+            log('----------------------------------------', 'info');
             log('Configuration Updated:', 'info');
             log('  Pixel ID: ' + (config.pixelId || 'NOT SET'), 'debug');
             log('  CAPI URL: ' + (config.capiUrl || 'NOT SET'), 'debug');
@@ -184,7 +184,7 @@
                 loadPixel(config.pixelId);
             }
 
-            log('════════════════════════════════════════', 'info');
+            log('----------------------------------------', 'info');
         }
 
         // ============================================================
@@ -233,7 +233,7 @@
             const fbc = getCookie('_fbc');
             const fbp = getCookie('_fbp');
 
-            log('════════════════════════════════════════', 'info');
+            log('----------------------------------------', 'info');
             log('EVENT: ' + eventName, 'info');
             log('Event ID (for deduplication): ' + eventId, 'debug');
             log('User: ' + firstName + ' ' + lastName + ' (' + email + ')', 'debug');
@@ -244,15 +244,15 @@
             if (config.pixelId && pixelLoaded && typeof fbq !== 'undefined') {
                 try {
                     fbq('track', eventName, eventData, { eventID: eventId });
-                    log('✓ PIXEL: Event sent to Facebook', 'pixel');
+                    log('PIXEL OK: Event sent', 'pixel');
                     log('  Pixel Event ID: ' + eventId, 'pixel');
                 } catch (pixelError) {
-                    log('✗ PIXEL ERROR: ' + pixelError.message, 'error');
+                    log('PIXEL ERROR: ' + pixelError.message, 'error');
                 }
             } else if (!config.pixelId) {
-                log('○ PIXEL: Skipped (no Pixel ID configured)', 'warn');
+                log('PIXEL: Skipped (no Pixel ID configured)', 'warn');
             } else {
-                log('✗ PIXEL: fbq not loaded', 'error');
+                log('PIXEL: fbq not loaded', 'error');
             }
 
             // ===== STEP 2: Send Server-Side CAPI Event =====
@@ -291,7 +291,7 @@
 
                     if (data.success) {
                         const eventsReceived = data.result?.events_received || 1;
-                        log('✓ CAPI: Success - events_received: ' + eventsReceived, 'success');
+                        log('CAPI OK: events_received=' + eventsReceived, 'success');
                         log('  CAPI Event ID: ' + data.eventId, 'success');
 
                         if (data.result?.messages) {
@@ -300,20 +300,20 @@
                             });
                         }
                     } else {
-                        log('✗ CAPI FAILED: ' + JSON.stringify(data.error || data), 'error');
+                        log('CAPI FAILED: ' + JSON.stringify(data.error || data), 'error');
                         if (data.result?.error) {
                             log('  FB Error: ' + JSON.stringify(data.result.error), 'error');
                         }
                     }
                 } catch (fetchError) {
-                    log('✗ CAPI NETWORK ERROR: ' + fetchError.message, 'error');
+                    log('CAPI NETWORK ERROR: ' + fetchError.message, 'error');
                     log('  Check if backend is running and CORS is configured', 'error');
                 }
             } else {
-                log('○ CAPI: Skipped (no CAPI URL configured)', 'warn');
+                log('CAPI: Skipped (no CAPI URL configured)', 'warn');
             }
 
-            log('════════════════════════════════════════', 'info');
+            log('----------------------------------------', 'info');
             log('Event ID for deduplication: ' + eventId, 'success');
             log('Check Meta Events Manager to verify', 'info');
         }
