@@ -1,6 +1,6 @@
 # Meta Pixel + CAPI Demo
 
-Test your Meta Pixel and Conversions API (CAPI) integration. Send browser and server events simultaneously, verify deduplication, and confirm results in Events Manager.
+A hands-on tool for testing Meta Pixel and Conversions API (CAPI) together — fire browser and server events, verify deduplication, and see results in Events Manager.
 
 **Live demo:** https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html
 
@@ -8,12 +8,12 @@ Test your Meta Pixel and Conversions API (CAPI) integration. Send browser and se
 
 ## How It Works
 
-When a user triggers an event (e.g. "Add to Cart"), two things happen:
+When a user triggers an event (e.g. "Add to Cart"):
 
-1. **Browser Pixel** sends the event to Meta via `fbq('track', ...)`
+1. **Browser Pixel** fires the event via `fbq('track', ...)`
 2. **Your backend** sends the same event to Meta's Graph API via CAPI
 
-Both share the same **Event ID**, so Meta deduplicates and counts once. If the Pixel is blocked (ad blocker), CAPI still delivers.
+Both share the same **Event ID**, so Meta deduplicates them. If the Pixel is blocked (ad blocker), CAPI still delivers. Your access token never touches the frontend.
 
 ```
 User clicks "Add to Cart"
@@ -27,44 +27,31 @@ User clicks "Add to Cart"
 Meta matches on event_id, counts as one event.
 ```
 
-The frontend never holds your access token — it sends raw event data to your backend, which hashes PII with SHA-256, attaches the token, and forwards to Meta.
-
 ---
 
 ## Getting Your Credentials
 
-You need three things from Meta. Here's where to find each:
+All three come from [Events Manager](https://business.facebook.com/events_manager2) — select your Pixel, then:
 
-1. **Pixel ID** — Go to [Events Manager](https://business.facebook.com/events_manager2), select your Pixel. The ID is in the header (a number like `123456789012345`).
-
-2. **Access Token** — In Events Manager, select your Pixel, go to **Settings**, and click **Generate Access Token**. Copy it immediately — it won't be shown again.
-
-3. **Test Event Code** (optional) — In Events Manager, select your Pixel, go to the **Test Events** tab. The code is shown at the top (e.g. `TEST12345`). Using this routes events to the test view instead of production data.
+1. **Pixel ID** — shown in the header (a number like `123456789012345`)
+2. **Access Token** — go to **Settings > Generate Access Token**. Copy it immediately, it won't be shown again.
+3. **Test Event Code** (optional) — go to **Test Events** tab, code is at the top (e.g. `TEST12345`). Routes events to the test view instead of production.
 
 ---
 
 ## Set Up Your Backend
 
-Each person needs their own backend — it holds your Pixel ID and access token.
+Each person needs their own backend — it holds your credentials as env vars.
 
 ### Option A: Deploy to Render (recommended)
 
-1. Fork this repo on GitHub
-2. Go to [render.com](https://render.com), sign up, click **New > Web Service**
-3. Connect your GitHub account, select your fork
-4. Set **Root Directory** to `backend`, **Build Command** to `npm install`, **Start Command** to `npm start`
-5. Add environment variables:
+1. Fork this repo, then go to [render.com](https://render.com) and create a **New > Web Service** from your fork
+2. Set **Root Directory** to `backend`, **Build Command** to `npm install`, **Start Command** to `npm start`
+3. Add env vars: `PIXEL_ID` (required), `FB_ACCESS_TOKEN` (required), `TEST_EVENT_CODE` (optional)
+4. Deploy — your backend URL will be `https://your-service-name.onrender.com/api/event`
+5. Add your frontend domain to `ALLOWED_ORIGINS` in `backend/server.js`
 
-| Variable | Required | Description |
-|---|---|---|
-| `PIXEL_ID` | Yes | Your Facebook Pixel ID |
-| `FB_ACCESS_TOKEN` | Yes | Access token with pixel permissions |
-| `TEST_EVENT_CODE` | No | Routes events to Test Events tab |
-
-6. Click **Deploy**. Your backend URL will be `https://your-service-name.onrender.com/api/event`
-7. Add your frontend domain to `ALLOWED_ORIGINS` in `backend/server.js` for CORS
-
-You can also deploy to Railway, Heroku, or any Node.js host — the setup is the same.
+Works the same on Railway, Heroku, or any Node.js host.
 
 ### Option B: Run locally
 
@@ -80,38 +67,34 @@ export TEST_EVENT_CODE="TEST12345"   # optional
 npm start
 ```
 
-Verify at `http://localhost:3000` — you should see a JSON health check. Your backend URL is `http://localhost:3000/api/event`.
+Verify at `http://localhost:3000` — you should see a JSON health check.
 
 ---
 
 ## Quick Start
 
-Once your backend is running (see above), open the frontend and wire it up:
-
-1. Open the [live demo](https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html), or serve locally with `cd docs && npx serve .` and open `test-lab.html`
-2. Enter your **Pixel ID**, **CAPI Backend URL**, and optionally a **Test Event Code**
-3. Click **Save Configuration**
-4. Enter a name and email, click any event button
-5. Check the log panel for results
-6. Go to **Events Manager > your Pixel > Test Events** tab — events should appear within seconds
+1. Open the [live demo](https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html) (or serve locally: `cd docs && npx serve .`)
+2. Enter your **Pixel ID**, **CAPI Backend URL**, and optionally a **Test Event Code**, then save
+3. Fill in a name and email, click any event button
+4. Check the log panel, then head to **Events Manager > Test Events** — events should appear within seconds
 
 ---
 
 ## Fork & Run Your Own
 
-Want your own instance? The repo is designed for it — no credentials are hardcoded.
+Want your own instance? No credentials are hardcoded, so it's straightforward:
 
 1. **Fork** this repo on GitHub
-2. **Deploy your backend** — follow [Set Up Your Backend](#set-up-your-backend) above with your own `PIXEL_ID` and `FB_ACCESS_TOKEN`
+2. **Deploy your backend** with your own `PIXEL_ID` and `FB_ACCESS_TOKEN` (see [above](#set-up-your-backend))
 3. **Add your GitHub Pages domain** to `ALLOWED_ORIGINS` in `backend/server.js` (e.g. `'https://yourusername.github.io'`)
-4. **Enable GitHub Pages** — Settings > Pages, set source to branch `main`, folder `/docs`
+4. **Enable GitHub Pages** — Settings > Pages, branch `main`, folder `/docs`
 5. Open `https://yourusername.github.io/meta-pixel-capi-demo/test-lab.html` and enter your backend URL
 
 ---
 
 ## Test Lab Scenarios
 
-The Test Lab (the default live demo) lets you toggle channels (Pixel, CAPI, Ad Blocker) and simulate these scenarios:
+The Test Lab lets you toggle channels (Pixel, CAPI, Ad Blocker) to simulate:
 
 | Scenario | What happens |
 |---|---|
@@ -132,21 +115,19 @@ The Test Lab (the default live demo) lets you toggle channels (Pixel, CAPI, Ad B
   "eventId": "AddToCart_1710000000_abc123",
   "eventData": {
     "content_name": "Test Product",
-    "content_ids": ["PROD-1234"],
     "value": 49.99,
     "currency": "USD"
   },
   "userData": {
     "email": "test@example.com",
-    "firstName": "John",
-    "lastName": "Doe"
+    "firstName": "John"
   },
   "eventSourceUrl": "https://yoursite.com/products",
   "testEventCode": "TEST12345"
 }
 ```
 
-The backend hashes user data (email, phone, name) with SHA-256 before sending to Meta. `fbc` and `fbp` cookies are passed as-is.
+The backend hashes PII (email, phone, name) with SHA-256 before sending to Meta.
 
 ---
 
@@ -162,4 +143,3 @@ This is a test tool. For production: obtain user consent before firing Pixel (GD
 - [Meta Pixel](https://developers.facebook.com/docs/meta-pixel)
 - [Deduplication Guide](https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events)
 - [Test Events](https://developers.facebook.com/docs/marketing-api/conversions-api/using-the-api#test-events)
-- [Limited Data Use](https://developers.facebook.com/docs/marketing-apis/data-processing-options)
