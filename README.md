@@ -43,44 +43,11 @@ You need three things from Meta. Here's where to find each:
 
 ---
 
-## Quick Start
+## Set Up Your Backend
 
-### 1. Start the backend
+Each person needs their own backend — it holds your Pixel ID and access token.
 
-```bash
-git clone https://github.com/abhinav14kr/meta-pixel-capi-demo.git
-cd meta-pixel-capi-demo/backend
-npm install
-
-export PIXEL_ID="your_pixel_id"
-export FB_ACCESS_TOKEN="your_access_token"
-export TEST_EVENT_CODE="TEST12345"   # optional
-
-npm start
-```
-
-Verify at `http://localhost:3000` — you should see a JSON health check.
-
-### 2. Open the frontend
-
-Serve locally with `cd ../docs && npx serve .`, or use the [live demo](https://abhinav14kr.github.io/meta-pixel-capi-demo/).
-
-### 3. Configure and send events
-
-1. Enter your Pixel ID, CAPI Backend URL (`http://localhost:3000/api/event`), and optionally a Test Event Code
-2. Click **Save Configuration**
-3. Enter a name and email, click any event button
-4. Check the log panel for results
-
-### 4. Verify in Events Manager
-
-Go to Events Manager > your Pixel > Test Events tab. Events should appear within seconds.
-
----
-
-## Deploy Your Own Backend (Render)
-
-Each person needs their own backend — it holds your Pixel ID and access token. Here's how to set one up on [Render](https://render.com) (free tier works):
+### Option A: Deploy to Render (recommended)
 
 1. Fork this repo on GitHub
 2. Go to [render.com](https://render.com), sign up, click **New > Web Service**
@@ -99,7 +66,38 @@ Each person needs their own backend — it holds your Pixel ID and access token.
 
 You can also deploy to Railway, Heroku, or any Node.js host — the setup is the same.
 
-### Frontend hosting
+### Option B: Run locally
+
+```bash
+git clone https://github.com/abhinav14kr/meta-pixel-capi-demo.git
+cd meta-pixel-capi-demo/backend
+npm install
+
+export PIXEL_ID="your_pixel_id"
+export FB_ACCESS_TOKEN="your_access_token"
+export TEST_EVENT_CODE="TEST12345"   # optional
+
+npm start
+```
+
+Verify at `http://localhost:3000` — you should see a JSON health check. Your backend URL is `http://localhost:3000/api/event`.
+
+---
+
+## Quick Start
+
+Once your backend is running (see above), open the frontend and wire it up:
+
+1. Open the [live demo](https://abhinav14kr.github.io/meta-pixel-capi-demo/), or serve locally with `cd docs && npx serve .`
+2. Enter your **Pixel ID**, **CAPI Backend URL**, and optionally a **Test Event Code**
+3. Click **Save Configuration**
+4. Enter a name and email, click any event button
+5. Check the log panel for results
+6. Go to **Events Manager > your Pixel > Test Events** tab — events should appear within seconds
+
+---
+
+### Frontend Hosting
 
 Fork the repo, go to Settings > Pages, set branch to `main` and folder to `/docs`. Your site will be at `https://YOUR_USERNAME.github.io/meta-pixel-capi-demo/`.
 
