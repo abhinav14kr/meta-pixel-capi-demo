@@ -13,16 +13,18 @@
             background: #f0f2f5;
         }
         h1 { color: #1877f2; text-align: center; }
-        form {
+        .card {
             background: white;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
         }
+        .card h2 { margin-top: 0; color: #1c1e21; font-size: 16px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
         input {
             width: 100%;
             padding: 12px;
-            margin: 8px 0 16px 0;
+            margin: 5px 0 15px 0;
             border: 1px solid #ddd;
             border-radius: 6px;
             box-sizing: border-box;
@@ -39,10 +41,12 @@
             margin-right: 10px;
             margin-top: 10px;
         }
-        #cartBtn { background: #1877f2; color: white; }
-        #cartBtn:hover { background: #166fe5; }
-        #wishBtn { background: #42b72a; color: white; }
-        #wishBtn:hover { background: #36a420; }
+        .btn-primary { background: #1877f2; color: white; }
+        .btn-primary:hover { background: #166fe5; }
+        .btn-success { background: #42b72a; color: white; }
+        .btn-success:hover { background: #36a420; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-secondary:hover { background: #5a6268; }
         .log {
             margin-top: 20px;
             background: #1e1e1e;
@@ -62,84 +66,140 @@
         .log .success { color: #2ecc71; }
         .log .error { color: #e74c3c; }
         .log .debug { color: #9b59b6; }
+        .log .warn { color: #f39c12; }
         label { font-weight: 500; color: #333; }
+        .nav { text-align: center; margin-bottom: 20px; }
+        .nav a { color: #1877f2; text-decoration: none; font-weight: 500; }
+        .nav a:hover { text-decoration: underline; }
     </style>
-
-    <!-- Facebook Pixel Code -->
-    <!-- TODO: Replace YOUR_PIXEL_ID with your actual Facebook Pixel ID -->
-    <script>
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', 'YOUR_PIXEL_ID');
-        fbq('track', 'PageView');
-    </script>
-    <noscript>
-        <img height="1" width="1" style="display:none"
-        src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"/>
-    </noscript>
-    <!-- End Facebook Pixel Code -->
 </head>
 <body>
     <h1>🔵 Meta Pixels + CAPI Test</h1>
+    <p class="nav">Simple mode · <a href="test-lab.html">Switch to Test Lab (advanced)</a></p>
 
-    <form id="form">
+    <!-- Configuration -->
+    <div class="card">
+        <h2>⚙️ Configuration</h2>
+
+        <label for="pixelId">Pixel ID</label>
+        <input type="text" id="pixelId" placeholder="Enter your Facebook Pixel ID" value="">
+
+        <label for="capiUrl">CAPI Backend URL</label>
+        <input type="url" id="capiUrl" placeholder="https://your-backend.onrender.com/api/event" value="">
+
+        <label for="testEventCode">Test Event Code (optional)</label>
+        <input type="text" id="testEventCode" placeholder="From Events Manager > Test Events tab" value="">
+
+        <button type="button" class="btn-secondary" onclick="updateConfig()" style="width: 100%;">Update Configuration</button>
+    </div>
+
+    <!-- User Data & Events -->
+    <div class="card">
+        <h2>👤 User Data & Events</h2>
+
         <label for="name">Full Name</label>
-        <input type="text" id="name" placeholder="Enter your name" required>
+        <input type="text" id="name" placeholder="Enter your name" value="">
 
         <label for="email">Email Address</label>
-        <input type="email" id="email" placeholder="Enter your email" required>
+        <input type="email" id="email" placeholder="Enter your email" value="">
 
         <label for="phone">Phone Number (optional)</label>
-        <input type="tel" id="phone" placeholder="Enter your phone">
+        <input type="tel" id="phone" placeholder="Enter your phone" value="">
 
-        <button type="button" id="cartBtn">🛒 Add to Cart</button>
-        <button type="button" id="wishBtn">❤️ Add to Wishlist</button>
-    </form>
+        <button type="button" class="btn-primary" id="cartBtn">🛒 Add to Cart</button>
+        <button type="button" class="btn-success" id="wishBtn">❤️ Add to Wishlist</button>
+    </div>
 
-    <div class="log" id="log">[Ready] Waiting for events...</div>
+    <div class="log" id="log">[Ready] Configure your Pixel ID and CAPI URL above, then send events.</div>
 
     <script>
         // ============================================================
-        // CONFIGURATION - Update these values before deploying
+        // STATE
         // ============================================================
+        let config = {
+            pixelId: '',
+            capiUrl: '',
+            testEventCode: ''
+        };
 
-        // Your CAPI Backend URL (e.g., https://your-app.onrender.com/api/event)
-        // For local testing, use: http://localhost:3000/api/event
-        const CAPI_URL = 'http://localhost:3000/api/event';
-
-        // Your Facebook Pixel ID (same as in the Pixel code above)
-        const PIXEL_ID = 'YOUR_PIXEL_ID';
+        let pixelLoaded = false;
 
         // ============================================================
-
-        // Logging function to display events in the log panel
+        // LOGGING
+        // ============================================================
         function log(message, type) {
             const el = document.getElementById('log');
             const timestamp = new Date().toLocaleTimeString();
             const className = type || 'info';
             el.innerHTML += '\n<span class="' + className + '">[' + timestamp + '] ' + message + '</span>';
             el.scrollTop = el.scrollHeight;
-            // Also log to browser console for debugging
             console.log('[' + type + ']', message);
         }
 
-        // Get Facebook cookies for better event matching
+        // ============================================================
+        // PIXEL LOADING (dynamic)
+        // ============================================================
+        function loadPixel(pixelId) {
+            if (!pixelId) {
+                log('⚠️ Pixel ID not configured. Enter your Pixel ID above.', 'warn');
+                return false;
+            }
+
+            if (pixelLoaded) {
+                log('Pixel already loaded. Reinitializing with new ID...', 'debug');
+            }
+
+            !function(f,b,e,v,n,t,s)
+            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+            n.queue=[];t=b.createElement(e);t.async=!0;
+            t.src=v;s=b.getElementsByTagName(e)[0];
+            s.parentNode.insertBefore(t,s)}(window, document,'script',
+            'https://connect.facebook.net/en_US/fbevents.js');
+
+            fbq('init', pixelId);
+            fbq('track', 'PageView');
+            pixelLoaded = true;
+            log('✓ Pixel loaded with ID: ' + pixelId, 'success');
+            log('PageView event sent via Pixel', 'pixel');
+            return true;
+        }
+
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
+        function updateConfig() {
+            config.pixelId = document.getElementById('pixelId').value.trim();
+            config.capiUrl = document.getElementById('capiUrl').value.trim();
+            config.testEventCode = document.getElementById('testEventCode').value.trim();
+
+            log('════════════════════════════════════════', 'info');
+            log('Configuration Updated:', 'info');
+            log('  Pixel ID: ' + (config.pixelId || 'NOT SET'), 'debug');
+            log('  CAPI URL: ' + (config.capiUrl || 'NOT SET'), 'debug');
+            log('  Test Event Code: ' + (config.testEventCode || 'NOT SET (events go to production)'), 'debug');
+
+            if (config.pixelId) {
+                loadPixel(config.pixelId);
+            }
+
+            log('════════════════════════════════════════', 'info');
+        }
+
+        // ============================================================
+        // COOKIE HELPER
+        // ============================================================
         function getCookie(name) {
             const value = '; ' + document.cookie;
             const parts = value.split('; ' + name + '=');
-            if (parts.length === 2) {
-                return parts.pop().split(';').shift();
-            }
+            if (parts.length === 2) return parts.pop().split(';').shift();
             return null;
         }
 
-        // Main event sending function
+        // ============================================================
+        // MAIN EVENT FUNCTION
+        // ============================================================
         async function sendEvent(eventName) {
             const nameInput = document.getElementById('name').value;
             const email = document.getElementById('email').value;
@@ -150,16 +210,18 @@
                 return;
             }
 
-            // Parse first and last name
+            if (!config.pixelId && !config.capiUrl) {
+                alert('Please configure at least a Pixel ID or CAPI URL above');
+                return;
+            }
+
             const names = nameInput.trim().split(' ');
             const firstName = names[0] || '';
             const lastName = names.slice(1).join(' ') || '';
 
             // Generate a unique Event ID for deduplication
-            // This SAME ID must be sent to both Pixel and CAPI
             const eventId = eventName + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-            // Event data for both Pixel and CAPI
             const eventData = {
                 content_name: 'Test Product',
                 content_ids: ['PROD-1234'],
@@ -168,7 +230,6 @@
                 currency: 'USD'
             };
 
-            // Get Facebook click ID and browser ID cookies
             const fbc = getCookie('_fbc');
             const fbp = getCookie('_fbp');
 
@@ -180,90 +241,93 @@
             if (fbp) log('FBP Cookie: ' + fbp, 'debug');
 
             // ===== STEP 1: Send Browser Pixel Event =====
-            try {
-                // The eventID parameter is critical for deduplication
-                fbq('track', eventName, eventData, { eventID: eventId });
-                log('✓ PIXEL: Event sent to Facebook', 'pixel');
-                log('  Pixel Event ID: ' + eventId, 'pixel');
-            } catch (pixelError) {
-                log('✗ PIXEL ERROR: ' + pixelError.message, 'error');
+            if (config.pixelId && pixelLoaded && typeof fbq !== 'undefined') {
+                try {
+                    fbq('track', eventName, eventData, { eventID: eventId });
+                    log('✓ PIXEL: Event sent to Facebook', 'pixel');
+                    log('  Pixel Event ID: ' + eventId, 'pixel');
+                } catch (pixelError) {
+                    log('✗ PIXEL ERROR: ' + pixelError.message, 'error');
+                }
+            } else if (!config.pixelId) {
+                log('○ PIXEL: Skipped (no Pixel ID configured)', 'warn');
+            } else {
+                log('✗ PIXEL: fbq not loaded', 'error');
             }
 
             // ===== STEP 2: Send Server-Side CAPI Event =====
-            log('Sending CAPI request to: ' + CAPI_URL, 'debug');
+            if (config.capiUrl) {
+                log('Sending CAPI request to: ' + config.capiUrl, 'debug');
 
-            const capiPayload = {
-                eventName: eventName,
-                eventId: eventId,  // SAME Event ID as Pixel for deduplication
-                eventData: eventData,
-                userData: {
-                    email: email,
-                    phone: phone,
-                    firstName: firstName,
-                    lastName: lastName,
-                    fbc: fbc,
-                    fbp: fbp
-                },
-                eventSourceUrl: window.location.href,
-                clientUserAgent: navigator.userAgent
-            };
-
-            log('CAPI Payload: ' + JSON.stringify(capiPayload, null, 2), 'debug');
-
-            try {
-                const response = await fetch(CAPI_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
+                const capiPayload = {
+                    eventName: eventName,
+                    eventId: eventId,
+                    eventData: eventData,
+                    userData: {
+                        email: email,
+                        phone: phone,
+                        firstName: firstName,
+                        lastName: lastName,
+                        fbc: fbc,
+                        fbp: fbp
                     },
-                    body: JSON.stringify(capiPayload)
-                });
-
-                log('CAPI Response Status: ' + response.status, 'debug');
-
-                const data = await response.json();
-                log('CAPI Response: ' + JSON.stringify(data, null, 2), 'debug');
-
-                if (data.success) {
-                    const eventsReceived = data.result?.events_received || 1;
-                    log('✓ CAPI: Success - events_received: ' + eventsReceived, 'success');
-                    log('  CAPI Event ID: ' + data.eventId, 'success');
-
-                    // Check for any Facebook API messages
-                    if (data.result?.messages) {
-                        data.result.messages.forEach(function(msg) {
-                            log('  FB Message: ' + msg, 'info');
-                        });
-                    }
-                } else {
-                    log('✗ CAPI FAILED: ' + JSON.stringify(data.error || data), 'error');
-                    if (data.result?.error) {
-                        log('  FB Error: ' + JSON.stringify(data.result.error), 'error');
-                    }
+                    eventSourceUrl: window.location.href,
+                    clientUserAgent: navigator.userAgent
+                };
+                if (config.testEventCode) {
+                    capiPayload.testEventCode = config.testEventCode;
                 }
-            } catch (fetchError) {
-                log('✗ CAPI NETWORK ERROR: ' + fetchError.message, 'error');
-                log('  Check if backend is running and CORS is configured', 'error');
+
+                log('CAPI Payload: ' + JSON.stringify(capiPayload, null, 2), 'debug');
+
+                try {
+                    const response = await fetch(config.capiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(capiPayload)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        const eventsReceived = data.result?.events_received || 1;
+                        log('✓ CAPI: Success - events_received: ' + eventsReceived, 'success');
+                        log('  CAPI Event ID: ' + data.eventId, 'success');
+
+                        if (data.result?.messages) {
+                            data.result.messages.forEach(function(msg) {
+                                log('  FB Message: ' + msg, 'info');
+                            });
+                        }
+                    } else {
+                        log('✗ CAPI FAILED: ' + JSON.stringify(data.error || data), 'error');
+                        if (data.result?.error) {
+                            log('  FB Error: ' + JSON.stringify(data.result.error), 'error');
+                        }
+                    }
+                } catch (fetchError) {
+                    log('✗ CAPI NETWORK ERROR: ' + fetchError.message, 'error');
+                    log('  Check if backend is running and CORS is configured', 'error');
+                }
+            } else {
+                log('○ CAPI: Skipped (no CAPI URL configured)', 'warn');
             }
 
             log('════════════════════════════════════════', 'info');
-            log('Both Pixel & CAPI sent with Event ID: ' + eventId, 'success');
-            log('Check Meta Events Manager for deduplication', 'info');
+            log('Event ID for deduplication: ' + eventId, 'success');
+            log('Check Meta Events Manager to verify', 'info');
         }
 
-        // Event listeners for buttons
+        // Event listeners
         document.getElementById('cartBtn').addEventListener('click', function() {
             sendEvent('AddToCart');
         });
-
         document.getElementById('wishBtn').addEventListener('click', function() {
             sendEvent('AddToWishlist');
         });
 
-        // Log page load
-        log('Page loaded. Pixel ID: ' + PIXEL_ID, 'info');
-        log('CAPI Backend: ' + CAPI_URL, 'info');
-        log('PageView event sent via Pixel', 'pixel');
+        // Init
+        log('Ready. Enter your Pixel ID and CAPI URL above to get started.', 'info');
     </script>
 </body>
 </html>
