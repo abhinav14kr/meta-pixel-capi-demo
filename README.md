@@ -95,11 +95,7 @@ Once your backend is running (see above), open the frontend and wire it up:
 5. Check the log panel for results
 6. Go to **Events Manager > your Pixel > Test Events** tab — events should appear within seconds
 
----
-
-### Frontend Hosting
-
-Fork the repo, go to Settings > Pages, set branch to `main` and folder to `/docs`. Your site will be at `https://YOUR_USERNAME.github.io/meta-pixel-capi-demo/`.
+> **Want to customize the UI?** Fork the repo and enable GitHub Pages (Settings > Pages, branch: `main`, folder: `/docs`).
 
 ---
 
