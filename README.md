@@ -2,7 +2,7 @@
 
 Test your Meta Pixel and Conversions API (CAPI) integration. Send browser and server events simultaneously, verify deduplication, and confirm results in Events Manager.
 
-**Live demo:** https://abhinav14kr.github.io/meta-pixel-capi-demo/
+**Live demo:** https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html
 
 ---
 
@@ -88,7 +88,7 @@ Verify at `http://localhost:3000` — you should see a JSON health check. Your b
 
 Once your backend is running (see above), open the frontend and wire it up:
 
-1. Open the [live demo](https://abhinav14kr.github.io/meta-pixel-capi-demo/), or serve locally with `cd docs && npx serve .`
+1. Open the [live demo](https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html), or serve locally with `cd docs && npx serve .` and open `test-lab.html`
 2. Enter your **Pixel ID**, **CAPI Backend URL**, and optionally a **Test Event Code**
 3. Click **Save Configuration**
 4. Enter a name and email, click any event button
@@ -99,9 +99,9 @@ Once your backend is running (see above), open the frontend and wire it up:
 
 ---
 
-## Test Lab
+## Test Lab Scenarios
 
-The [Test Lab](https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html) page lets you toggle channels and simulate scenarios:
+The Test Lab (the default live demo) lets you toggle channels (Pixel, CAPI, Ad Blocker) and simulate these scenarios:
 
 | Scenario | What happens |
 |---|---|
