@@ -37,7 +37,7 @@ You need three things from Meta. Here's where to find each:
 
 1. **Pixel ID** — Go to [Events Manager](https://business.facebook.com/events_manager2), select your Pixel. The ID is in the header (a number like `123456789012345`).
 
-2. **Access Token** — Go to [Business Settings > System Users](https://business.facebook.com/settings/system-users). Create a System User (Admin role), click **Generate New Token**, select your app, and grant the `ads_management` permission. Copy the token immediately — it won't be shown again.
+2. **Access Token** — In Events Manager, select your Pixel, go to **Settings**, and click **Generate Access Token**. Copy it immediately — it won't be shown again.
 
 3. **Test Event Code** (optional) — In Events Manager, select your Pixel, go to the **Test Events** tab. The code is shown at the top (e.g. `TEST12345`). Using this routes events to the test view instead of production data.
 
