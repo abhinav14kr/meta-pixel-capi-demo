@@ -1,23 +1,31 @@
 # Meta Pixel + CAPI Demo
 
-A demo for integrating Conversions API (CAPI) with browser Pixel events to enable server-side tracking and event deduplication. The interactive front-end allows you to trigger and view both Pixel and CAPI events in real time, making it easy to test and validate your setup.
+Test and validate your Meta Pixel and Conversions API (CAPI) integration. Send events from the browser and server simultaneously, verify deduplication, and see results in Events Manager.
 
 **Live demo:** https://abhinav14kr.github.io/meta-pixel-capi-demo/
 
-You can follow the guide to setup front-end with your pixel and track these events directly in Events Manager, ensuring your implementation is working as expected.
-
 ---
 
-## What's Included
+## How It Works
 
-- **Browser Pixel:** Sends events from the browser to Facebook.
-- **Server CAPI:** Sends the same events from your backend to Facebook's Graph API.
-- **Deduplication:** Both use the same Event ID, so Facebook counts them as one event.
+When a user takes an action (e.g. "Add to Cart"), two things happen at the same time:
 
-**Benefits:**
-- Improved data accuracy (server events bypass ad blockers)
-- Better event matching (server can send hashed user data)
-- Redundancy (if one fails, the other works — test with browser restrictions to observe CAPI fallback)
+1. **Browser Pixel** sends the event directly to Meta via `fbq('track', ...)`
+2. **Server CAPI** sends the same event from your backend to Meta's Graph API
+
+Both use the same **Event ID**, so Meta counts them as one event (deduplication). If the browser event is blocked (e.g. ad blocker), the server event still gets through.
+
+```
+User clicks "Add to Cart"
+        |
+        +---> Browser Pixel ---> Meta (via fbevents.js)
+        |         event_id: "ABC123"
+        |
+        +---> Your Backend ---> Meta Graph API
+                  event_id: "ABC123"
+
+Meta sees both, matches on event_id, counts once.
+```
 
 ---
 
@@ -25,133 +33,164 @@ You can follow the guide to setup front-end with your pixel and track these even
 
 ```
 meta-pixel-capi-demo/
-├── docs/              # Static HTML (GitHub Pages source)
-│   ├── index.html     # Simple Pixel + CAPI demo
-│   └── test-lab.html  # Interactive test lab with scenarios
-├── backend/           # Node.js Express server (CAPI endpoint)
-│   ├── server.js
-│   └── package.json
-└── README.md
+  docs/                 <- Frontend (GitHub Pages)
+    index.html          <- Simple mode: configure and send events
+    test-lab.html       <- Test Lab: toggle Pixel/CAPI, simulate ad blockers
+  backend/              <- Node.js server (CAPI endpoint)
+    server.js
+    package.json
 ```
 
 ---
 
-## Quick Start
+## Setup Guide
 
-1. **Prerequisites:**
-   - Node.js 18+
-   - Facebook Pixel ID
-   - Facebook Access Token (System User token with pixel access, or User token with `ads_management` permission)
+### What You Need
 
-2. **Clone & Install:**
-   ```bash
-   git clone https://github.com/abhinav14kr/meta-pixel-capi-demo.git
-   cd meta-pixel-capi-demo/backend
-   npm install
-   export PIXEL_ID="your_pixel_id_here"
-   export FB_ACCESS_TOKEN="your_access_token_here"
-   npm start
-   ```
+- Node.js 18+
+- A Facebook **Pixel ID** (from Events Manager)
+- A Facebook **Access Token** (System User token with pixel access, or User token with `ads_management` permission)
+- Optionally, a **Test Event Code** (from Events Manager > Test Events tab)
 
-3. **Configure Frontend:**
-   - Edit `docs/index.html`:
-     - Replace `YOUR_PIXEL_ID` (2 places: Pixel init and noscript fallback)
-     - Update `PIXEL_ID` constant in the script section
-     - Set `CAPI_URL` to your backend (`http://localhost:3000/api/event` or production URL)
-   - Or use `docs/test-lab.html` which lets you configure Pixel ID and CAPI URL directly in the browser
+### Step 1: Start the Backend
 
-4. **Test Locally:**
-   ```bash
-   cd docs
-   npx serve .
-   ```
+```bash
+git clone https://github.com/abhinav14kr/meta-pixel-capi-demo.git
+cd meta-pixel-capi-demo/backend
+npm install
 
-5. **Enable GitHub Pages (to host your own instance):**
-   - Go to your fork's **Settings > Pages**
-   - Set Branch to `main`, Folder to `/docs`
-   - Click Save — your site will be live at `https://YOUR_USERNAME.github.io/meta-pixel-capi-demo/`
+export PIXEL_ID="your_pixel_id"
+export FB_ACCESS_TOKEN="your_access_token"
+export TEST_EVENT_CODE="TEST12345"   # optional
+
+npm start
+```
+
+The server starts at `http://localhost:3000`. Verify by opening that URL in your browser — you should see a JSON health check response.
+
+### Step 2: Open the Frontend
+
+Option A — serve locally:
+```bash
+cd ../docs
+npx serve .
+```
+
+Option B — use the live demo at https://abhinav14kr.github.io/meta-pixel-capi-demo/
+
+### Step 3: Configure and Test
+
+1. Enter your **Pixel ID** in the Configuration section
+2. Enter your **CAPI Backend URL** (e.g. `http://localhost:3000/api/event` or your deployed URL)
+3. Optionally enter a **Test Event Code** to route events to the Test Events tab instead of production
+4. Click **Save Configuration**
+5. Enter a name and email, then click any event button (Add to Cart, Purchase, etc.)
+6. Watch the log panel — it shows whether Pixel and CAPI succeeded
+
+### Step 4: Verify in Events Manager
+
+1. Go to **Events Manager** in your Meta Business Suite
+2. Click on your Pixel
+3. Go to the **Test Events** tab (if you used a Test Event Code)
+4. You should see your events appear within seconds
 
 ---
 
-## Deploy to Production
+## Deploying Your Own Instance
 
-- **Backend:**
-  - Deploy `backend/` to [Render](https://render.com/) or any Node.js hosting service
-  - Set `PIXEL_ID` and `FB_ACCESS_TOKEN` env variables
+### Backend
 
-- **Frontend:**
-  - Enable GitHub Pages with source `main` / `/docs`, or deploy `docs/` to any static host
+Deploy the `backend/` folder to any Node.js host (Render, Railway, Heroku, etc.). Set these environment variables:
 
-- **CORS:**
-  - Add your frontend domain to `ALLOWED_ORIGINS` in `backend/server.js`
+| Variable | Required | Description |
+|---|---|---|
+| `PIXEL_ID` | Yes | Your Facebook Pixel ID |
+| `FB_ACCESS_TOKEN` | Yes | Access token with pixel permissions |
+| `TEST_EVENT_CODE` | No | Routes events to Test Events tab |
+
+After deploying, add your frontend domain to `ALLOWED_ORIGINS` in `server.js` for CORS.
+
+### Frontend
+
+Option A — **GitHub Pages**: Fork the repo, go to Settings > Pages, set branch to `main` and folder to `/docs`. Your site will be at `https://YOUR_USERNAME.github.io/meta-pixel-capi-demo/`.
+
+Option B — Deploy the `docs/` folder to any static host.
 
 ---
 
-## Event Deduplication
+## Test Lab
 
-Both browser and server send events with the same Event ID. Facebook deduplicates and counts as one event.
+The Test Lab page (`test-lab.html`) lets you experiment with different scenarios:
+
+| Scenario | What it does |
+|---|---|
+| Both Working | Pixel + CAPI fire together. Events are deduplicated. |
+| Pixel Only | CAPI disabled. Shows browser-only tracking. |
+| CAPI Only | Pixel disabled. Shows server-only tracking. |
+| Ad Blocked | Pixel is simulated as blocked. CAPI still works. |
+
+It also tracks per-session stats: how many events went through each channel and average CAPI latency.
 
 ---
 
 ## API Reference
 
 **POST /api/event**
-Send server-side event to Facebook CAPI.
 
-**Request Example:**
+Send a server-side event to Meta's Conversions API.
+
+Request:
 ```json
 {
   "eventName": "AddToCart",
-  "eventId": "AddToCart_1234567890_abc123",
-  "eventData": { ... },
-  "userData": { ... },
-  "eventSourceUrl": "https://yoursite.com/products"
+  "eventId": "AddToCart_1710000000_abc123",
+  "eventData": {
+    "content_name": "Test Product",
+    "content_ids": ["PROD-1234"],
+    "content_type": "product",
+    "value": 49.99,
+    "currency": "USD"
+  },
+  "userData": {
+    "email": "test@example.com",
+    "firstName": "John",
+    "lastName": "Doe",
+    "phone": "+1234567890"
+  },
+  "eventSourceUrl": "https://yoursite.com/products",
+  "testEventCode": "TEST12345"
 }
 ```
 
-**Response Example:**
+Response:
 ```json
 {
   "success": true,
-  "eventId": "AddToCart_1234567890_abc123",
-  "eventTime": 1234567890,
+  "eventId": "AddToCart_1710000000_abc123",
+  "eventTime": 1710000000,
   "result": { "events_received": 1 }
 }
 ```
 
----
-
-## Testing with Test Events
-
-To route events to Events Manager's **Test Events** tab (without polluting production data):
-
-1. Go to **Events Manager > Your Pixel > Test Events**
-2. Copy the **Test Event Code** (e.g., `TEST12345`)
-3. Set it as an env var on your backend:
-   ```bash
-   export TEST_EVENT_CODE="TEST12345"
-   ```
-   Or enter it in the Test Lab's Configuration section.
+The backend hashes all user data (email, phone, name) with SHA-256 before sending to Meta. Facebook click ID (`fbc`) and browser ID (`fbp`) are passed as-is.
 
 ---
 
-## Production Considerations
+## Production Notes
 
-This demo is designed for testing. For production implementations, also consider:
+This demo is for testing. For production, also consider:
 
-- **Consent Management**: Pixel should only fire after user consent (GDPR/CCPA)
-- **Limited Data Use (LDU)**: Add `data_processing_options` to the CAPI payload for US users
-- **Opt-Out Handling**: Support `opt_out` field in user_data for users who opt out of tracking
-- **Graph API Versioning**: Update `API_VERSION` in `server.js` periodically as Meta deprecates old versions
+- **Consent**: Only fire Pixel after user consent (GDPR/CCPA)
+- **Limited Data Use**: Add `data_processing_options` to CAPI payloads for US users
+- **Opt-Out**: Support the `opt_out` field in user_data
+- **API Versioning**: Update `API_VERSION` in `server.js` as Meta deprecates old versions
 
 ---
 
 ## Resources
 
-- [Conversions API Docs](https://developers.facebook.com/docs/marketing-api/conversions-api)
-- [Pixel Docs](https://developers.facebook.com/docs/meta-pixel)
+- [Conversions API Documentation](https://developers.facebook.com/docs/marketing-api/conversions-api)
+- [Meta Pixel Documentation](https://developers.facebook.com/docs/meta-pixel)
 - [Event Deduplication Guide](https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events)
 - [Test Events](https://developers.facebook.com/docs/marketing-api/conversions-api/using-the-api#test-events)
 - [Limited Data Use](https://developers.facebook.com/docs/marketing-apis/data-processing-options)
-
----
