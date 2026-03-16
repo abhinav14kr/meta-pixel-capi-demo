@@ -176,21 +176,9 @@ The backend hashes all user data (email, phone, name) with SHA-256 before sendin
 
 ---
 
-## Production Notes
-
-This demo is for testing. For production, also consider:
-
-- **Consent**: Only fire Pixel after user consent (GDPR/CCPA)
-- **Limited Data Use**: Add `data_processing_options` to CAPI payloads for US users
-- **Opt-Out**: Support the `opt_out` field in user_data
-- **API Versioning**: Update `API_VERSION` in `server.js` as Meta deprecates old versions
-
----
-
 ## Resources
 
 - [Conversions API Documentation](https://developers.facebook.com/docs/marketing-api/conversions-api)
 - [Meta Pixel Documentation](https://developers.facebook.com/docs/meta-pixel)
 - [Event Deduplication Guide](https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events)
 - [Test Events](https://developers.facebook.com/docs/marketing-api/conversions-api/using-the-api#test-events)
-- [Limited Data Use](https://developers.facebook.com/docs/marketing-apis/data-processing-options)
