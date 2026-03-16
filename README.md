@@ -149,4 +149,8 @@ This is a test tool. For production: obtain user consent before firing Pixel (GD
 
 ## Resources
 
-- [Conversions API](https://developers.facebook.com/docs/marketing-api/conversions-api) · [Meta Pixel](https://developers.facebook.com/docs/meta-pixel) · [Deduplication Guide](https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events) · [Test Events](https://developers.facebook.com/docs/marketing-api/conversions-api/using-the-api#test-events) · [Limited Data Use](https://developers.facebook.com/docs/marketing-apis/data-processing-options)
+- [Conversions API](https://developers.facebook.com/docs/marketing-api/conversions-api)
+- [Meta Pixel](https://developers.facebook.com/docs/meta-pixel)
+- [Deduplication Guide](https://developers.facebook.com/docs/marketing-api/conversions-api/deduplicate-pixel-and-server-events)
+- [Test Events](https://developers.facebook.com/docs/marketing-api/conversions-api/using-the-api#test-events)
+- [Limited Data Use](https://developers.facebook.com/docs/marketing-apis/data-processing-options)
