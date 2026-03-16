@@ -95,7 +95,17 @@ Once your backend is running (see above), open the frontend and wire it up:
 5. Check the log panel for results
 6. Go to **Events Manager > your Pixel > Test Events** tab — events should appear within seconds
 
-> **Want to customize the UI?** Fork the repo and enable GitHub Pages (Settings > Pages, branch: `main`, folder: `/docs`).
+---
+
+## Fork & Run Your Own
+
+Want your own instance? The repo is designed for it — no credentials are hardcoded.
+
+1. **Fork** this repo on GitHub
+2. **Deploy your backend** — follow [Set Up Your Backend](#set-up-your-backend) above with your own `PIXEL_ID` and `FB_ACCESS_TOKEN`
+3. **Add your GitHub Pages domain** to `ALLOWED_ORIGINS` in `backend/server.js` (e.g. `'https://yourusername.github.io'`)
+4. **Enable GitHub Pages** — Settings > Pages, set source to branch `main`, folder `/docs`
+5. Open `https://yourusername.github.io/meta-pixel-capi-demo/test-lab.html` and enter your backend URL
 
 ---
 
