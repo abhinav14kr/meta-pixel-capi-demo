@@ -24,7 +24,7 @@ const API_VERSION = 'v21.0';
 
 // CORS Configuration - Add your frontend domains here
 const ALLOWED_ORIGINS = [
-    // Add your GitHub Pages URL here, e.g.: 'https://yourusername.github.io'
+    'https://abhinav14kr.github.io',  // GitHub Pages
     'http://localhost:3000',
     'http://localhost:8080',
     'http://127.0.0.1:5500'  // VS Code Live Server
