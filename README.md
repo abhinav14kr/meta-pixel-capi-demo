@@ -4,7 +4,7 @@ A hands-on tool for testing Meta Pixel and Conversions API (CAPI) together — f
 
 > **Just want to test quickly?** Use the [Test Lab](https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html) — enter your Pixel ID and CAPI backend URL, fire events, and verify in your Events Manager. No setup or forking required.
 >
-> **Want your own branded setup?** [Fork this repo](#fork--run-your-own) and deploy your own demo page with your Pixel and backend hardcoded.
+> **Want your own setup?** [Fork this repo](#fork--run-your-own) and deploy your own demo page with your Pixel and backend.
 
 ---
 
