@@ -3,7 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Meta Pixels + CAPI Test</title>
+    <title>Meta Pixel + CAPI Demo</title>
+    <!-- Meta Pixel Code -->
+    <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+
+        fbq('init', '733939589457690');
+        fbq('track', 'PageView');
+    </script>
+    <noscript>
+        <img height="1" width="1" style="display:none"
+             src="https://www.facebook.com/tr?id=733939589457690&ev=PageView&noscript=1"/>
+    </noscript>
+    <!-- End Meta Pixel Code -->
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -13,6 +32,7 @@
             background: #f0f2f5;
         }
         h1 { color: #1877f2; text-align: center; }
+        .subtitle { text-align: center; color: #65676b; margin-bottom: 25px; }
         .card {
             background: white;
             padding: 30px;
@@ -45,8 +65,7 @@
         .btn-primary:hover { background: #166fe5; }
         .btn-success { background: #42b72a; color: white; }
         .btn-success:hover { background: #36a420; }
-        .btn-secondary { background: #6c757d; color: white; }
-        .btn-secondary:hover { background: #5a6268; }
+        label { font-weight: 500; color: #333; }
         .log {
             margin-top: 20px;
             background: #1e1e1e;
@@ -62,41 +81,21 @@
         }
         .log .info { color: #61dafb; }
         .log .pixel { color: #f1c40f; }
-        .log .capi { color: #e74c3c; }
         .log .success { color: #2ecc71; }
         .log .error { color: #e74c3c; }
         .log .debug { color: #9b59b6; }
         .log .warn { color: #f39c12; }
-        label { font-weight: 500; color: #333; }
-        .nav { text-align: center; margin-bottom: 20px; }
-        .nav a { color: #1877f2; text-decoration: none; font-weight: 500; }
-        .nav a:hover { text-decoration: underline; }
+        .log .timing { color: #1abc9c; }
     </style>
 </head>
 <body>
-    <h1>Meta Pixel + CAPI Test</h1>
-    <p class="nav">Simple mode · <a href="test-lab.html">Switch to Test Lab (advanced)</a></p>
-
-    <!-- Configuration -->
-    <div class="card">
-        <h2>Configuration</h2>
-        <p style="margin: 0 0 12px 0; font-size: 12px; color: #65676b;">Need help? Follow the <a href="https://github.com/abhinav14kr/meta-pixel-capi-demo#readme" target="_blank" style="color: #1877f2;">setup guide</a> to get your credentials and backend URL.</p>
-
-        <label for="pixelId">Pixel ID</label>
-        <input type="text" id="pixelId" placeholder="Enter your Facebook Pixel ID" value="">
-
-        <label for="capiUrl">CAPI Backend URL</label>
-        <input type="url" id="capiUrl" placeholder="https://your-backend.onrender.com/api/event" value="">
-
-        <label for="testEventCode">Test Event Code (optional)</label>
-        <input type="text" id="testEventCode" placeholder="From Events Manager > Test Events tab" value="">
-
-        <button type="button" class="btn-secondary" onclick="updateConfig()" style="width: 100%;">Update Configuration</button>
-    </div>
+    <h1>Meta Pixel + CAPI Demo</h1>
+    <p class="subtitle">See how browser Pixel and server-side CAPI work together with deduplication</p>
 
     <!-- User Data & Events -->
     <div class="card">
-        <h2>User Data & Events</h2>
+        <h2>Try It Out</h2>
+        <p style="margin: 0 0 15px 0; font-size: 13px; color: #65676b;">Enter some details and click a button. Both Pixel (browser) and CAPI (server) events fire with the same Event ID for deduplication.</p>
 
         <label for="name">Full Name</label>
         <input type="text" id="name" placeholder="Enter your name" value="">
@@ -111,119 +110,107 @@
         <button type="button" class="btn-success" id="wishBtn">Add to Wishlist</button>
     </div>
 
-    <div class="log" id="log">[Ready] Configure your Pixel ID and CAPI URL above, then send events.</div>
+    <div class="log" id="log">[Ready] PageView tracked automatically. Click a button to send an event.</div>
 
     <script>
-        // ============================================================
-        // STATE
-        // ============================================================
-        let config = {
-            pixelId: '',
-            capiUrl: '',
-            testEventCode: ''
-        };
-
-        let pixelLoaded = false;
+        var CAPI_URL = 'https://capi-backend-fdsl.onrender.com/api/event';
 
         // ============================================================
         // LOGGING
         // ============================================================
         function log(message, type) {
-            const el = document.getElementById('log');
-            const timestamp = new Date().toLocaleTimeString();
-            const className = type || 'info';
+            var el = document.getElementById('log');
+            var timestamp = new Date().toLocaleTimeString();
+            var className = type || 'info';
             el.innerHTML += '\n<span class="' + className + '">[' + timestamp + '] ' + message + '</span>';
             el.scrollTop = el.scrollHeight;
-            console.log('[' + type + ']', message);
-        }
-
-        // ============================================================
-        // PIXEL LOADING (dynamic)
-        // ============================================================
-        function loadPixel(pixelId) {
-            if (!pixelId) {
-                log('Pixel ID not configured. Enter your Pixel ID above.', 'warn');
-                return false;
-            }
-
-            if (pixelLoaded) {
-                log('Pixel already loaded. Reinitializing with new ID...', 'debug');
-            }
-
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-
-            fbq('init', pixelId);
-            fbq('track', 'PageView');
-            pixelLoaded = true;
-            log('Pixel loaded with ID: ' + pixelId, 'success');
-            log('PageView event sent via Pixel', 'pixel');
-            return true;
-        }
-
-        // ============================================================
-        // CONFIGURATION
-        // ============================================================
-        function updateConfig() {
-            config.pixelId = document.getElementById('pixelId').value.trim();
-            config.capiUrl = document.getElementById('capiUrl').value.trim();
-            config.testEventCode = document.getElementById('testEventCode').value.trim();
-
-            log('----------------------------------------', 'info');
-            log('Configuration Updated:', 'info');
-            log('  Pixel ID: ' + (config.pixelId || 'NOT SET'), 'debug');
-            log('  CAPI URL: ' + (config.capiUrl || 'NOT SET'), 'debug');
-            log('  Test Event Code: ' + (config.testEventCode || 'NOT SET (events go to production)'), 'debug');
-
-            if (config.pixelId) {
-                loadPixel(config.pixelId);
-            }
-
-            log('----------------------------------------', 'info');
         }
 
         // ============================================================
         // COOKIE HELPER
         // ============================================================
         function getCookie(name) {
-            const value = '; ' + document.cookie;
-            const parts = value.split('; ' + name + '=');
+            var value = '; ' + document.cookie;
+            var parts = value.split('; ' + name + '=');
             if (parts.length === 2) return parts.pop().split(';').shift();
             return null;
         }
 
         // ============================================================
-        // MAIN EVENT FUNCTION
+        // SEND CAPI EVENT (PageView on load + button events)
+        // ============================================================
+        async function sendCapiEvent(eventName, eventId, eventData, userData) {
+            var payload = {
+                eventName: eventName,
+                eventId: eventId,
+                eventData: eventData || {},
+                userData: userData || {},
+                eventSourceUrl: window.location.href,
+                clientUserAgent: navigator.userAgent
+            };
+
+            try {
+                var response = await fetch(CAPI_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                var data = await response.json();
+
+                if (data.success) {
+                    log('CAPI OK: ' + eventName + ' sent (events_received=' + (data.result?.events_received || 1) + ')', 'success');
+                    if (data.timing) {
+                        log('  Backend latency: ' + data.timing.totalLatencyMs + 'ms', 'timing');
+                    }
+                } else {
+                    log('CAPI FAILED: ' + JSON.stringify(data.error || data), 'error');
+                }
+            } catch (e) {
+                log('CAPI NETWORK ERROR: ' + e.message, 'error');
+            }
+        }
+
+        // ============================================================
+        // PAGEVIEW CAPI (fires on load alongside Pixel PageView)
+        // ============================================================
+        var pageViewEventId = 'PageView_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+        window.addEventListener('load', function() {
+            log('PageView tracked via Pixel (browser)', 'pixel');
+
+            var fbc = getCookie('_fbc');
+            var fbp = getCookie('_fbp');
+
+            sendCapiEvent('PageView', pageViewEventId, {}, {
+                fbc: fbc,
+                fbp: fbp
+            });
+
+            log('PageView sent via CAPI (server) with Event ID: ' + pageViewEventId, 'info');
+            log('Both channels fired — Facebook will deduplicate using the shared Event ID', 'debug');
+        });
+
+        // ============================================================
+        // BUTTON EVENTS
         // ============================================================
         async function sendEvent(eventName) {
-            const nameInput = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
+            var nameInput = document.getElementById('name').value;
+            var email = document.getElementById('email').value;
+            var phone = document.getElementById('phone').value;
 
             if (!nameInput || !email) {
-                alert('Please enter your name and email');
+                alert('Please enter your name and email.');
                 return;
             }
 
-            if (!config.pixelId && !config.capiUrl) {
-                alert('Please configure at least a Pixel ID or CAPI URL above');
-                return;
-            }
+            var names = nameInput.trim().split(' ');
+            var firstName = names[0] || '';
+            var lastName = names.slice(1).join(' ') || '';
 
-            const names = nameInput.trim().split(' ');
-            const firstName = names[0] || '';
-            const lastName = names.slice(1).join(' ') || '';
+            var eventId = eventName + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 
-            // Generate a unique Event ID for deduplication
-            const eventId = eventName + '_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-
-            const eventData = {
+            var eventData = {
                 content_name: 'Test Product',
                 content_ids: ['PROD-1234'],
                 content_type: 'product',
@@ -231,104 +218,41 @@
                 currency: 'USD'
             };
 
-            const fbc = getCookie('_fbc');
-            const fbp = getCookie('_fbp');
+            var fbc = getCookie('_fbc');
+            var fbp = getCookie('_fbp');
 
             log('----------------------------------------', 'info');
             log('EVENT: ' + eventName, 'info');
-            log('Event ID (for deduplication): ' + eventId, 'debug');
-            log('User: ' + firstName + ' ' + lastName + ' (' + email + ')', 'debug');
-            if (fbc) log('FBC Cookie: ' + fbc, 'debug');
-            if (fbp) log('FBP Cookie: ' + fbp, 'debug');
+            log('Event ID: ' + eventId, 'debug');
 
-            // ===== STEP 1: Send Browser Pixel Event =====
-            if (config.pixelId && pixelLoaded && typeof fbq !== 'undefined') {
-                try {
-                    fbq('track', eventName, eventData, { eventID: eventId });
-                    log('PIXEL OK: Event sent', 'pixel');
-                    log('  Pixel Event ID: ' + eventId, 'pixel');
-                } catch (pixelError) {
-                    log('PIXEL ERROR: ' + pixelError.message, 'error');
-                }
-            } else if (!config.pixelId) {
-                log('PIXEL: Skipped (no Pixel ID configured)', 'warn');
+            // Step 1: Pixel (browser)
+            if (typeof fbq !== 'undefined') {
+                fbq('track', eventName, eventData, { eventID: eventId });
+                log('PIXEL OK: ' + eventName + ' sent', 'pixel');
             } else {
                 log('PIXEL: fbq not loaded', 'error');
             }
 
-            // ===== STEP 2: Send Server-Side CAPI Event =====
-            if (config.capiUrl) {
-                log('Sending CAPI request to: ' + config.capiUrl, 'debug');
+            // Step 2: CAPI (server)
+            await sendCapiEvent(eventName, eventId, eventData, {
+                email: email,
+                phone: phone,
+                firstName: firstName,
+                lastName: lastName,
+                fbc: fbc,
+                fbp: fbp
+            });
 
-                const capiPayload = {
-                    eventName: eventName,
-                    eventId: eventId,
-                    eventData: eventData,
-                    userData: {
-                        email: email,
-                        phone: phone,
-                        firstName: firstName,
-                        lastName: lastName,
-                        fbc: fbc,
-                        fbp: fbp
-                    },
-                    eventSourceUrl: window.location.href,
-                    clientUserAgent: navigator.userAgent
-                };
-                if (config.testEventCode) {
-                    capiPayload.testEventCode = config.testEventCode;
-                }
-
-                log('CAPI Payload: ' + JSON.stringify(capiPayload, null, 2), 'debug');
-
-                try {
-                    const response = await fetch(config.capiUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(capiPayload)
-                    });
-
-                    const data = await response.json();
-
-                    if (data.success) {
-                        const eventsReceived = data.result?.events_received || 1;
-                        log('CAPI OK: events_received=' + eventsReceived, 'success');
-                        log('  CAPI Event ID: ' + data.eventId, 'success');
-
-                        if (data.result?.messages) {
-                            data.result.messages.forEach(function(msg) {
-                                log('  FB Message: ' + msg, 'info');
-                            });
-                        }
-                    } else {
-                        log('CAPI FAILED: ' + JSON.stringify(data.error || data), 'error');
-                        if (data.result?.error) {
-                            log('  FB Error: ' + JSON.stringify(data.result.error), 'error');
-                        }
-                    }
-                } catch (fetchError) {
-                    log('CAPI NETWORK ERROR: ' + fetchError.message, 'error');
-                    log('  Check if backend is running and CORS is configured', 'error');
-                }
-            } else {
-                log('CAPI: Skipped (no CAPI URL configured)', 'warn');
-            }
-
+            log('Both channels fired with same Event ID for deduplication', 'success');
             log('----------------------------------------', 'info');
-            log('Event ID for deduplication: ' + eventId, 'success');
-            log('Check Meta Events Manager to verify', 'info');
         }
 
-        // Event listeners
         document.getElementById('cartBtn').addEventListener('click', function() {
             sendEvent('AddToCart');
         });
         document.getElementById('wishBtn').addEventListener('click', function() {
             sendEvent('AddToWishlist');
         });
-
-        // Init
-        log('Ready. Enter your Pixel ID and CAPI URL above to get started.', 'info');
     </script>
 </body>
 </html>
