@@ -2,7 +2,35 @@
 
 A hands-on tool for testing Meta Pixel and Conversions API (CAPI) together — fire browser and server events, verify deduplication, and see results in Events Manager.
 
-**Live demo:** https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html
+---
+
+## Two Pages, Two Purposes
+
+### Demo Page (`index.html`)
+
+A personal demo page with Pixel and CAPI pre-configured. Visit it and events start tracking automatically:
+
+- **PageView** fires on page load (both Pixel and CAPI)
+- **Add to Cart** and **Add to Wishlist** fire on button click (both channels)
+- Both channels share the same Event ID for deduplication
+- No configuration needed — just open and use
+
+**Fork this repo to make it your own** (see [below](#fork--run-your-own)).
+
+### Test Lab (`test-lab.html`)
+
+An interactive lab where you enter your own Pixel ID and CAPI backend URL to test scenarios without forking:
+
+- [Open the Test Lab](https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html)
+- Toggle Pixel, CAPI, and simulated ad blocker on/off
+- Events are tracked in your own Events Manager
+
+| Scenario | What happens |
+|---|---|
+| Both Working | Pixel + CAPI fire together, deduplicated |
+| Pixel Only | No server backup — vulnerable to ad blockers |
+| CAPI Only | Server-side only — works regardless of browser |
+| Ad Blocked | Pixel blocked, CAPI still delivers |
 
 ---
 
@@ -29,6 +57,48 @@ Meta matches on event_id, counts as one event.
 
 ---
 
+## Fork & Run Your Own
+
+Want your own instance with your Pixel hardcoded? Here's how:
+
+### 1. Fork & clone
+
+Fork this repo on GitHub, then clone it locally.
+
+### 2. Deploy your backend
+
+1. Go to [render.com](https://render.com) and create a **New > Web Service** from your fork
+2. Set **Root Directory** to `backend`, **Build Command** to `npm install`, **Start Command** to `npm start`
+3. Add env vars: `PIXEL_ID` (required), `FB_ACCESS_TOKEN` (required), `TEST_EVENT_CODE` (optional)
+4. Deploy — your backend URL will be `https://your-service-name.onrender.com`
+
+Works the same on Railway, Heroku, or any Node.js host.
+
+### 3. Update your frontend
+
+In `docs/index.html`, update these two values:
+
+- **Pixel ID** — replace `'733939589457690'` with your Pixel ID (appears twice: in `fbq('init', ...)` and in the `<noscript>` img tag)
+- **CAPI URL** — replace the `CAPI_URL` variable with your Render backend URL (e.g. `'https://your-service-name.onrender.com/api/event'`)
+
+### 4. Update CORS
+
+In `backend/server.js`, add your GitHub Pages domain to `ALLOWED_ORIGINS`:
+
+```js
+const ALLOWED_ORIGINS = [
+    'https://yourusername.github.io',  // your GitHub Pages domain
+    'http://localhost:3000',
+    ...
+];
+```
+
+### 5. Enable GitHub Pages
+
+Go to your repo's **Settings > Pages**, set branch to `main` and folder to `/docs`. Your demo will be live at `https://yourusername.github.io/meta-pixel-capi-demo/`.
+
+---
+
 ## Getting Your Credentials
 
 All three come from [Events Manager](https://business.facebook.com/events_manager2) — select your Pixel, then:
@@ -39,24 +109,10 @@ All three come from [Events Manager](https://business.facebook.com/events_manage
 
 ---
 
-## Set Up Your Backend
-
-Each person needs their own backend — it holds your credentials as env vars.
-
-### Option A: Deploy to Render (recommended)
-
-1. Fork this repo, then go to [render.com](https://render.com) and create a **New > Web Service** from your fork
-2. Set **Root Directory** to `backend`, **Build Command** to `npm install`, **Start Command** to `npm start`
-3. Add env vars: `PIXEL_ID` (required), `FB_ACCESS_TOKEN` (required), `TEST_EVENT_CODE` (optional)
-4. Deploy — your backend URL will be `https://your-service-name.onrender.com/api/event`
-5. Add your frontend domain to `ALLOWED_ORIGINS` in `backend/server.js`
-
-Works the same on Railway, Heroku, or any Node.js host.
-
-### Option B: Run locally
+## Running Locally
 
 ```bash
-git clone https://github.com/abhinav14kr/meta-pixel-capi-demo.git
+git clone https://github.com/your-username/meta-pixel-capi-demo.git
 cd meta-pixel-capi-demo/backend
 npm install
 
@@ -67,41 +123,7 @@ export TEST_EVENT_CODE="TEST12345"   # optional
 npm start
 ```
 
-Verify at `http://localhost:3000` — you should see a JSON health check.
-
----
-
-## Quick Start
-
-1. Open the [live demo](https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html) (or serve locally: `cd docs && npx serve .`)
-2. Enter your **Pixel ID**, **CAPI Backend URL**, and optionally a **Test Event Code**, then save
-3. Fill in a name and email, click any event button
-4. Check the log panel, then head to **Events Manager > Test Events** — events should appear within seconds
-
----
-
-## Fork & Run Your Own
-
-Want your own instance? No credentials are hardcoded, so it's straightforward:
-
-1. **Fork** this repo on GitHub
-2. **Deploy your backend** with your own `PIXEL_ID` and `FB_ACCESS_TOKEN` (see [above](#set-up-your-backend))
-3. **Add your GitHub Pages domain** to `ALLOWED_ORIGINS` in `backend/server.js` (e.g. `'https://yourusername.github.io'`)
-4. **Enable GitHub Pages** — Settings > Pages, branch `main`, folder `/docs`
-5. Open `https://yourusername.github.io/meta-pixel-capi-demo/test-lab.html` and enter your backend URL
-
----
-
-## Test Lab Scenarios
-
-The Test Lab lets you toggle channels (Pixel, CAPI, Ad Blocker) to simulate:
-
-| Scenario | What happens |
-|---|---|
-| Both Working | Pixel + CAPI fire together, deduplicated |
-| Pixel Only | No server backup — vulnerable to ad blockers |
-| CAPI Only | Server-side only — works regardless of browser |
-| Ad Blocked | Pixel blocked, CAPI still delivers |
+Verify at `http://localhost:3000` — you should see a JSON health check. Then serve the frontend: `cd docs && npx serve .`
 
 ---
 
