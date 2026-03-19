@@ -2,28 +2,22 @@
 
 A hands-on tool for testing Meta Pixel and Conversions API (CAPI) together — fire browser and server events, verify deduplication, and see results in Events Manager.
 
+> **Just want to test quickly?** Use the [Test Lab](https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html) — enter your Pixel ID and CAPI backend URL, fire events, and verify in your Events Manager. No setup or forking required.
+>
+> **Want your own branded setup?** [Fork this repo](#fork--run-your-own) and deploy your own demo page with your Pixel and backend hardcoded.
+
 ---
 
-## Two Pages, Two Purposes
+## Test Lab — Try It Without Forking
 
-### Demo Page (`index.html`)
+**[Open the Test Lab](https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html)**
 
-A personal demo page with Pixel and CAPI pre-configured. Visit it and events start tracking automatically:
+The Test Lab is a standalone page where you plug in your own Pixel ID and CAPI backend URL to test Pixel + CAPI behavior. Nothing is hardcoded — you bring your own credentials, and events go to your own Events Manager.
 
-- **PageView** fires on page load (both Pixel and CAPI)
-- **Add to Cart** and **Add to Wishlist** fire on button click (both channels)
-- Both channels share the same Event ID for deduplication
-- No configuration needed — just open and use
-
-**Fork this repo to make it your own** (see [below](#fork--run-your-own)).
-
-### Test Lab (`test-lab.html`)
-
-An interactive lab where you enter your own Pixel ID and CAPI backend URL to test scenarios without forking:
-
-- [Open the Test Lab](https://abhinav14kr.github.io/meta-pixel-capi-demo/test-lab.html)
+Use it to:
+- Verify your CAPI backend is sending events correctly
 - Toggle Pixel, CAPI, and simulated ad blocker on/off
-- Events are tracked in your own Events Manager
+- Test deduplication with shared Event IDs
 
 | Scenario | What happens |
 |---|---|
@@ -31,6 +25,14 @@ An interactive lab where you enter your own Pixel ID and CAPI backend URL to tes
 | Pixel Only | No server backup — vulnerable to ad blockers |
 | CAPI Only | Server-side only — works regardless of browser |
 | Ad Blocked | Pixel blocked, CAPI still delivers |
+
+---
+
+## Demo Page — Fork Your Own Setup
+
+The demo page (`index.html`) is a personal page with your Pixel and CAPI backend hardcoded. PageView tracks automatically on load, and button clicks fire AddToCart / AddToWishlist through both channels.
+
+**This is what you get when you [fork the repo](#fork--run-your-own)** — your own branded instance with no configuration fields exposed. Ideal for demos, onboarding walkthroughs, or sharing with clients.
 
 ---
 
